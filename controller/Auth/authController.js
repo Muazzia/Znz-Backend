@@ -14,6 +14,8 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const chkOldUser = await userModel.findByPk(value.email)
+    if (chkOldUser) return res.status(400).send('User already exists')
     const newUser = await userModel.create({
       ...value,
       password: hashedPassword,

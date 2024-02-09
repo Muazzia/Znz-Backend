@@ -36,7 +36,7 @@ const registerSchema = Joi.object({
             }
             return value;
         }, 'customValidation').required().max(255),
-    password: Joi.string().max(255)
+    password: Joi.string().max(255).required()
 })
 
 const validateRegister = (body) => {

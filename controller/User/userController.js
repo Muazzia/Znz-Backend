@@ -1,63 +1,134 @@
-const { where } = require("sequelize");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
 const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
-const { newEmailQueue } = require("../../utils/nodeMailer/mailer");
-const bcrypt = require("bcrypt");
+const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
-const jwt = require("jsonwebtoken");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
 
-
+// new
 const forgotPassword = async (req, res) => {
-  // res.end("hello from user controller")
-  const { error, value: { email } } = validateForgotPass(req.body)
-  if (error) return res.status(400).send(error.message)
+  const { error, value: { email } } = validateForgotPass(req.body);
+  if (error) {
+    return res.status(400).send(error.message);
+  }
 
   try {
     const userToFind = await userModel.findOne({ where: { email: email } });
+
     if (!userToFind) {
-      return res
-        .status(400)
-        .json({ statusCode: 400, message: "user not found" });
+      return res.status(400).json({ statusCode: 400, message: "User not found" });
     }
+
     if (userToFind.password === null) {
-      return res
-        .status(400)
-        .json({ statusCode: 400, message: "email sent already. " });
+      return res.status(400).json({ statusCode: 400, message: "Email sent already." });
     }
-    await userToFind.update({ password: null });
+
+    const jwtToken = jwt.sign(
+      {
+        userID: userToFind.userID,
+        firstName: userToFind.firstName,
+        lastName: userToFind.lastName,
+        email: userToFind.email,
+      },
+      process.env.Secret_KEY,
+      { expiresIn: process.env.expiry_time }
+    );
+
     const resetContent = `
-    <html>
-      <head>
-        <title>Reset Password</title>
-      </head>
-      <body style="font-family: Arial, sans-serif;">
-  
-        <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
-          <h2 style="color: #333;">Email Verification</h2>
-          <p>To Reset the Password, click on the link below:</p>
-          <a href="http://localhost:3000/api/user/set-password/${email}" target="_blank" style="text-decoration: none;">
-            <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-              Reset Password
-            </button>
-          </>
-        </div>
-      </body>
-    </html>
-  `;
-    await newEmailQueue.add({
+      <html>
+        <head>
+          <title>Reset Password</title>
+        </head>
+        <body style="font-family: Arial, sans-serif;">
+          <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #333;">Email Verification</h2>
+            <p>To reset the password, click on the link below:</p>
+            <a href=${process.env.emailFrontEndLink}?jwt=${jwtToken} target="_blank" style="text-decoration: none;">
+              <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                Reset Password
+              </button>
+            </a>
+          </div>
+        </body>
+      </html>
+    `;
+
+
+    await transporter.sendMail({
       to: userToFind.email,
       subject: "Password Reset Email",
       text: "Hello znz family, you have generated the request for the reset email password",
       html: resetContent,
-    });
-    return res
-      .status(201)
-      .json({ statusCode: 201, message: "password reset. check your email" });
+    })
+
+    // Send a success response to the client
+    return res.status(201).json({ statusCode: 201, message: "Password reset. Check your email." });
+
   } catch (error) {
-    console.log("error=>", error);
+    console.error("Error processing forgotPassword:", error);
+    // Send an error response to the client
+    return res.status(500).json({ statusCode: 500, message: "Internal Server Error" });
   }
 };
+
+
+
+
+
+// old
+// const forgotPassword = async (req, res) => {
+//   console.log('asdf');
+//   // res.end("hello from user controller")
+//   const { error, value: { email } } = validateForgotPass(req.body)
+//   if (error) return res.status(400).send(error.message)
+
+//   try {
+//     const userToFind = await userModel.findOne({ where: { email: email } });
+//     if (!userToFind) {
+//       return res
+//         .status(400)
+//         .json({ statusCode: 400, message: "user not found" });
+//     }
+//     if (userToFind.password === null) {
+//       return res
+//         .status(400)
+//         .json({ statusCode: 400, message: "email sent already. " });
+//     }
+//     // await userToFind.update({ password: null });
+//     const resetContent = `
+//     <html>
+//       <head>
+//         <title>Reset Password</title>
+//       </head>
+//       <body style="font-family: Arial, sans-serif;">
+
+//         <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
+//           <h2 style="color: #333;">Email Verification</h2>
+//           <p>To Reset the Password, click on the link below:</p>
+//           <a href="http://localhost:3000/api/user/set-password/${email}" target="_blank" style="text-decoration: none;">
+//             <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+//               Reset Password
+//             </button>
+//           </>
+//         </div>
+//       </body>
+//     </html>
+//   `;
+//     await newEmailQueue.add({
+//       to: userToFind.email,
+//       subject: "Password Reset Email",
+//       text: "Hello znz family, you have generated the request for the reset email password",
+//       html: resetContent,
+//     });
+//     return res
+//       .status(201)
+//       .json({ statusCode: 201, message: "password reset. check your email" });
+//   } catch (error) {
+//     console.log("error=>", error);
+//   }
+// };
 
 const setPassword = async (req, res) => {
   // res.end("hello from setPassword");

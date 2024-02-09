@@ -10,7 +10,7 @@ const validateForgotPass = (body) => {
 
 const setPassSchema = Joi.object({
     password: Joi.string().required().max(255),
-    confirmPasswrod: Joi.string().required().max(255)
+    confirmPassword: Joi.string().required().max(255)
 })
 
 const validateSetPass = (body) => {
