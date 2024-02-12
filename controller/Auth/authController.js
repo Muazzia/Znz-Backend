@@ -22,10 +22,22 @@ const registerUser = async (req, res) => {
       checked: null,
     });
 
+    const jwtToken = jwt.sign(
+      {
+        userID: newUser.userID,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+      },
+      process.env.Secret_KEY,
+      { expiresIn: process.env.expiry_time }
+    );
+
     return res.status(201).json({
       statusCode: 201,
       message: "user created successfully",
       data: newUser,
+      token: jwtToken
     });
   } catch (error) {
     console.log("internal server error- registerUser", error);
