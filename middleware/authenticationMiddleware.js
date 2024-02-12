@@ -16,6 +16,8 @@ function checkJWT(req, res, next) {
         return res.status(401).json({ error: "Unauthorized: Invalid token" });
       } else {
         console.log("JWT decoded:", decoded);
+
+        req.isPassReset = decoded.isPassReset ? true : false
         req.userEmail = decoded.email;
         next();
       }

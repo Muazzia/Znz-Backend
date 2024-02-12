@@ -9,6 +9,7 @@ const { validateForgotPass, validateSetPass, validateAdditionalUserData } = requ
 
 // new
 const forgotPassword = async (req, res) => {
+
   const { error, value: { email } } = validateForgotPass(req.body);
   if (error) {
     return res.status(400).send(error.message);
@@ -27,13 +28,11 @@ const forgotPassword = async (req, res) => {
 
     const jwtToken = jwt.sign(
       {
-        userID: userToFind.userID,
-        firstName: userToFind.firstName,
-        lastName: userToFind.lastName,
         email: userToFind.email,
+        isPassReset: true
       },
       process.env.Secret_KEY,
-      { expiresIn: process.env.expiry_time }
+      { expiresIn: '20m' }
     );
 
     const resetContent = `
@@ -131,11 +130,14 @@ const forgotPassword = async (req, res) => {
 // };
 
 const setPassword = async (req, res) => {
-  // res.end("hello from setPassword");
+  if (!req.isPassReset) return res.status(401).send('Token Invalid')
+
   const { error, value: { password, confirmPassword } } = validateSetPass(req.body)
   if (error) return res.status(400).send(error.message)
 
-  const email = req.params.email;
+
+  // const email = req.params.email;
+  const email = req.userEmail
   const userPassword = await userModel.findOne({ where: { email: email } });
   if (!userPassword) {
     return res.status(400).json({ statusCode: 400, message: "user not found" });
