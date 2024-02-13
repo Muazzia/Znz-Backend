@@ -5,7 +5,7 @@ const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
 const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
-const { validateForgotPass, validateSetPass, validateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
+const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword } = require("../../joiSchemas/User/userSchema");
 const { cloudinary } = require("../../utils/cloudinary/cloudinary");
 const { bufferToString } = require("../../middleware/multer");
 const userDetailsModel = require("../../models/userAdditionalInformation");
@@ -219,6 +219,34 @@ const getUserExtraDetails = async (req, res) => {
   }
 }
 
+const changePassword = async (req, res) => {
+  try {
+    const { error, value } = validateChangePassword(req.body)
+    if (error) return res.status(400).send(error.message)
+    const { oldPassword, newPassword, confirmPassword } = value
+    if (newPassword !== confirmPassword) return res.status(400).send('passwords doesnt match')
+
+    const user = await userModel.findByPk(req.userEmail)
+    if (!user) return res.status(404).send("User not found")
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid old password' });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password in the database
+    await user.update({ password: hashedNewPassword });
+
+    return res.status(200).json({ message: 'Password changed successfully', user });
+  }
+  catch (error) {
+    return res.status(500).send('Server error')
+  }
+}
+
 module.exports = {
   forgotPassword,
   setPassword,
@@ -226,5 +254,6 @@ module.exports = {
   logout,
   additionalUserDetails,
   addProfilePic,
-  getUserExtraDetails
+  getUserExtraDetails,
+  changePassword
 };

@@ -29,4 +29,14 @@ const validateAdditionalUserData = (body) => {
     return additionalUserDataSchema.validate(body)
 }
 
-module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData }
+const changePassword = Joi.object({
+    oldPassword: Joi.string().max(255).required(),
+    newPassword: Joi.string().max(255).required(),
+    confirmPassword: Joi.string().max(255).required()
+})
+
+const validateChangePassword = (body) => {
+    return changePassword.validate(body)
+}
+
+module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword }
