@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
     return res.status(201).json({
       statusCode: 201,
       message: "user created successfully",
-      data: newUser,
+      user: newUser,
       token: jwtToken
     });
   } catch (error) {

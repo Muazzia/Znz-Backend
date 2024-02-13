@@ -1,14 +1,7 @@
 const postModel = require("../../models/postModel");
-const { checkJWT } = require("../../middleware/authenticationMiddleware");
-const cloudinary = require("cloudinary").v2;
-const { Readable } = require("stream");
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
+const { cloudinary } = require('../../utils/cloudinary/cloudinary.js')
 
-cloudinary.config({
-  cloud_name: process.env.cloud_name,
-  api_key: process.env.cloud_Api_key,
-  api_secret: process.env.cloud_Api_Secret_key,
-});
 
 // Function to upload a file to Cloudinary
 const uploadToCloudinary = (file) => {
@@ -28,7 +21,6 @@ const uploadToCloudinary = (file) => {
   });
 };
 
-// const addingPost = async (req, res) => {
 
 //   try {
 //     const { post } = req.body;
