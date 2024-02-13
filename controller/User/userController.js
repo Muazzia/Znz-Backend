@@ -8,6 +8,7 @@ const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
 const { cloudinary } = require("../../utils/cloudinary/cloudinary");
 const { bufferToString } = require("../../middleware/multer");
+const userDetailsModel = require("../../models/userAdditionalInformation");
 
 // new
 const forgotPassword = async (req, res) => {
@@ -209,6 +210,14 @@ const addProfilePic = async (req, res) => {
   }
 }
 
+const getUserExtraDetails = async (req, res) => {
+  try {
+    const userDetails = await userDetailsModel.findByPk(req.userEmail)
+    return res.send(userDetails)
+  } catch (error) {
+    return res.status(500).send('Server error')
+  }
+}
 
 module.exports = {
   forgotPassword,
@@ -216,5 +225,6 @@ module.exports = {
   userDashboard,
   logout,
   additionalUserDetails,
-  addProfilePic
+  addProfilePic,
+  getUserExtraDetails
 };

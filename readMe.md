@@ -27,4 +27,5 @@
 - [Set Password](http://192.168.1.64:8080/api/user/setnew-password) (token to be to be passed in headers)
 - [Google OAuth](http://localhost:8080/api/auth/user/auth/google)
 - [Add User Details](http://localhost:8080/api/user/add-details) (when the user is logged in, a pop-up will appear for additional information)
+- [Get User Details](http://localhost:8080/api/user/user-details)
 - [add Post](http://localhost:8080/api/user/add-post)(add the post to the user)
