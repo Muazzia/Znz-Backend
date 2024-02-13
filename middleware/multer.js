@@ -102,9 +102,43 @@ const handleProfileUpload = (req, res, next) => {
   });
 }
 
+const handleCoverUpload = (req, res, next) => {
+  const uploadProfile = uploadSingle.single('coverPic');
+  uploadProfile(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer-specific error
+      console.error("Multer Error:", err);
+      return res.status(400).json({
+        statusCode: 400,
+        message: "File upload error",
+        error: err.message,
+      });
+    } else if (err) {
+      // Generic error
+      console.error("Error:", err);
+      return res.status(500).json({
+        statusCode: 500,
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+
+    // Check if files are missing in the request
+    if (!req.file) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Missing required parameter profilePic",
+      });
+    }
+
+    console.log("File Uploaded Successfully!");
+    next();
+  });
+}
+
 const bufferToString = (req) => {
   return parser.format('new', req.file.buffer)
 }
 
 
-module.exports = { handleFileUpload, uploadSingle, handleProfileUpload, bufferToString };
+module.exports = { handleFileUpload, handleProfileUpload, bufferToString, handleCoverUpload };

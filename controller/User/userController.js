@@ -210,6 +210,24 @@ const addProfilePic = async (req, res) => {
   }
 }
 
+const addCoverPic = async (req, res) => {
+  try {
+    const user = await userModel.findByPk(req.userEmail)
+    if (!user) return res.status(400).send('user not found')
+
+    const response = await cloudinary.uploader.upload(bufferToString(req).content)
+
+    await user.update({
+      coverPic: response.secure_url
+    })
+
+    return res.status(201).send(user)
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server Error')
+  }
+}
+
 const getUserExtraDetails = async (req, res) => {
   try {
     const userDetails = await userDetailsModel.findByPk(req.userEmail)
@@ -254,6 +272,7 @@ module.exports = {
   logout,
   additionalUserDetails,
   addProfilePic,
+  addCoverPic,
   getUserExtraDetails,
   changePassword
 };
