@@ -14,8 +14,10 @@ userRoutes.route('/change-password').patch(checkJWT, changePassword)
 
 userRoutes.route("/dashboard").get(checkJWT, checkPreviousToken, userDashboard)
 userRoutes.route("/logout").post(checkJWT, logout);
+
 userRoutes.route("/add-details").post(checkJWT, additionalUserDetails);
 userRoutes.route('/user-details').get(checkJWT, getUserExtraDetails)
+
 userRoutes.route('/profilepic').patch(checkJWT, handleProfileUpload, addProfilePic)
 userRoutes.route('/coverPic').patch(checkJWT, handleCoverUpload, addCoverPic)
 
