@@ -87,6 +87,16 @@ const userModel = sequelize.define(
         },
       },
     },
+    profilePic: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+      allowNull: true
+    },
+    coverPic: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
     googleUser: {
       type: DataTypes.STRING,
       allowNull: true,
