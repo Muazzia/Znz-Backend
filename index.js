@@ -26,12 +26,15 @@ require("./utils/passport/passport");
 // routes import
 const authR = require("./routes/Auth/auth");
 const userR = require("./routes/User/userRoutes");
+const storyR = require('./routes/Story/story')
 const postR = require("./routes/Post/postRoutes");
 const likeR = require("./routes/Like/likeRoutes");
+const { checkJWT } = require("./middleware/authenticationMiddleware");
 
 //  middlewares
 app.use("/api/auth/user", authR);
 app.use("/api/user", userR);
+app.use("/api/user/story", checkJWT, storyR);
 app.use("/api/user", postR);
 app.use("/api/post", likeR);
 
