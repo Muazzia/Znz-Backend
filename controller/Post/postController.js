@@ -130,28 +130,30 @@ const addingPost = async (req, res) => {
     if (error) return res.status(400).send(error.message)
 
 
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        statusCode: 400,
-        message: "Image files are required",
-      });
-    }
+    // if (!req.files || req.files.length === 0) {
+    //   return res.status(400).json({
+    //     statusCode: 400,
+    //     message: "Image files are required",
+    //   });
+    // }
     // decoded the user email from the middleware
     const userEmail = req.userEmail;
 
     // Process each uploaded file
     const imageUrls = [];
-    for (const file of req.files) {
-      const cloudinaryResponse = await uploadToCloudinary(file);
-      if (cloudinaryResponse.error) {
-        return res.status(500).json({
-          statusCode: 500,
-          message: "Internal server error during image upload",
-          error: cloudinaryResponse.error.message,
-        });
-      }
+    if (req.files) {
+      for (const file of req.files) {
+        const cloudinaryResponse = await uploadToCloudinary(file);
+        if (cloudinaryResponse.error) {
+          return res.status(500).json({
+            statusCode: 500,
+            message: "Internal server error during image upload",
+            error: cloudinaryResponse.error.message,
+          });
+        }
 
-      imageUrls.push(cloudinaryResponse.secure_url);
+        imageUrls.push(cloudinaryResponse.secure_url);
+      }
     }
 
     // Create post in the database with image URLs

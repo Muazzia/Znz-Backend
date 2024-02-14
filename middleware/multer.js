@@ -43,14 +43,14 @@ const handleFileUpload = (req, res, next) => {
     }
 
     // Check if files are missing in the request
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        statusCode: 400,
-        message: "Missing required parameter - images",
-      });
-    }
+    // if (!req.files || req.files.length === 0) {
+    //   return res.status(400).json({
+    //     statusCode: 400,
+    //     message: "Missing required parameter - images",
+    //   });
+    // }
 
-    console.log("Files Uploaded Successfully!");
+    // console.log("Files Uploaded Successfully!");
     next();
   });
 };
