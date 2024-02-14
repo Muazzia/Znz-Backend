@@ -26,7 +26,7 @@ const handleFileUpload = (req, res, next) => {
   upload(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
-      console.error("Multer Error:", err);
+      console.log("Multer Error:", err);
       return res.status(400).json({
         statusCode: 400,
         message: "File upload error",
@@ -34,7 +34,8 @@ const handleFileUpload = (req, res, next) => {
       });
     } else if (err) {
       // Generic error
-      console.error("Error:", err);
+      console.log('in this error');
+      console.log("Error:", err);
       return res.status(500).json({
         statusCode: 500,
         message: "Internal server error",
@@ -73,7 +74,7 @@ const handleProfileUpload = (req, res, next) => {
   uploadProfile(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
-      console.error("Multer Error:", err);
+      console.log("Multer Error:", err);
       return res.status(400).json({
         statusCode: 400,
         message: "File upload error",
@@ -81,7 +82,7 @@ const handleProfileUpload = (req, res, next) => {
       });
     } else if (err) {
       // Generic error
-      console.error("Error:", err);
+      console.log("Error:", err);
       return res.status(500).json({
         statusCode: 500,
         message: "Internal server error",
@@ -107,7 +108,7 @@ const handleCoverUpload = (req, res, next) => {
   uploadProfile(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
-      console.error("Multer Error:", err);
+      console.log("Multer Error:", err);
       return res.status(400).json({
         statusCode: 400,
         message: "File upload error",
@@ -115,7 +116,7 @@ const handleCoverUpload = (req, res, next) => {
       });
     } else if (err) {
       // Generic error
-      console.error("Error:", err);
+      console.log("Error:", err);
       return res.status(500).json({
         statusCode: 500,
         message: "Internal server error",
@@ -141,7 +142,7 @@ const handleStoryUpload = (req, res, next) => {
   uploadProfile(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
-      console.error("Multer Error:", err);
+      console.log("Multer Error:", err);
       return res.status(400).json({
         statusCode: 400,
         message: "File upload error",

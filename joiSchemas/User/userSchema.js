@@ -39,4 +39,16 @@ const validateChangePassword = (body) => {
     return changePassword.validate(body)
 }
 
-module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword }
+
+const userData = Joi.object({
+    dob: Joi.date(),
+    phoneNumber: Joi.string().max(11),
+    address: Joi.string().max(255),
+    bio: Joi.string().max(255)
+})
+
+const validateUserData = (body) => {
+    return userData.validate(body)
+}
+
+module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData }

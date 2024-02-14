@@ -5,7 +5,7 @@ const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
 const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
-const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword } = require("../../joiSchemas/User/userSchema");
+const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData } = require("../../joiSchemas/User/userSchema");
 const { cloudinary } = require("../../utils/cloudinary/cloudinary");
 const { bufferToString } = require("../../middleware/multer");
 const userDetailsModel = require("../../models/userAdditionalInformation");
@@ -265,6 +265,25 @@ const changePassword = async (req, res) => {
   }
 }
 
+const addUserDetails = async (req, res) => {
+  try {
+    const { error, value } = validateUserData(req.body)
+    if (error) return res.status(400).send(error.message)
+
+    const user = await userModel.findByPk(req.userEmail);
+
+    if (!user) return res.status(404).send('Not found User')
+
+    await user.update({
+      ...value
+    })
+
+    return res.status(200).send(user)
+  } catch (error) {
+    return res.status(500).send("Server Error")
+  }
+}
+
 module.exports = {
   forgotPassword,
   setPassword,
@@ -274,5 +293,6 @@ module.exports = {
   addProfilePic,
   addCoverPic,
   getUserExtraDetails,
-  changePassword
+  changePassword,
+  addUserDetails
 };

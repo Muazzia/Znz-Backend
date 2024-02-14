@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/connection");
+const { allow } = require("joi");
 
 const userModel = sequelize.define(
   "users",
@@ -93,6 +94,25 @@ const userModel = sequelize.define(
       allowNull: true
     },
     coverPic: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
+    bio: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
+    dob: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
+    phoneNumber: {
       type: DataTypes.STRING,
       allowNull: true,
       defaultValue: null
