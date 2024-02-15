@@ -18,10 +18,10 @@ const Token = sequelize.define("tokens", {
 sequelize
   .sync()
   .then(() => {
-    console.log("blacklistModel synchronized with the database(znz).");
+    console.log("Token synchronized with the database(znz).");
   })
   .catch((error) => {
-    console.error("Error synchronizing blacklistModel", error);
-});
+    console.error("Error synchronizing Token", error);
+  });
 
 module.exports = Token;

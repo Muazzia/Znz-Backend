@@ -1,4 +1,5 @@
 const postModel = require("../../models/postModel");
+const userModel = require('../../models/userModel.js')
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
 const { cloudinary } = require('../../utils/cloudinary/cloudinary.js')
 
@@ -101,19 +102,32 @@ const myPost = async (req, res) => {
   try {
     const userEmail = req.userEmail; // Access user email from the request object
 
-    const data = await postModel.findAndCountAll({
+    const postData = await postModel.findAll({
       where: { email: userEmail },
     });
 
-    if (!data || data.count === 0) {
-      return res
-        .status(404)
-        .json({ statusCode: 404, message: "No posts found", data: data });
-    }
+
+
+    const userData = await userModel.findByPk(userEmail)
+
+
+    const data = postData.map((post) => {
+      return {
+        ...post.dataValues,
+        images: JSON.parse(post.dataValues.images),
+        user: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profilePic: userData.profilePic
+        }
+      };
+    });
+
+
 
     return res
       .status(200)
-      .json({ statusCode: 200, message: "All posts fetched", data: data.rows });
+      .json({ statusCode: 200, message: "All posts fetched", data });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -163,10 +177,21 @@ const addingPost = async (req, res) => {
       images: imageUrls,
     });
 
+    const user = await userModel.findByPk(userEmail);
+
+
     return res.status(201).json({
       statusCode: 201,
       message: "Post added successfully",
-      postAdd,
+      postAdd: {
+        ...postAdd.dataValues,
+        images: JSON.parse(postAdd.dataValues.images),
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profilePic: user.profilePic
+        }
+      },
     });
   } catch (error) {
     console.error("Error in adding post:", error);
@@ -178,5 +203,51 @@ const addingPost = async (req, res) => {
   }
 };
 
-module.exports = { addingPost, myPost };
+const allPosts = async (req, res) => {
+  try {
+    const postData = await postModel.findAll();
+
+    if (postData.length === 0) return res
+      .status(200)
+      .json({ statusCode: 200, message: "No Post Found", data: postData })
+
+    const data = await Promise.all(postData.map(async (post) => {
+      const userData = await userModel.findByPk(post.email);
+      return {
+        ...post.dataValues,
+        images: JSON.parse(post.dataValues.images),
+        user: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profilePic: userData.profilePic
+        }
+      };
+    }));
+    console.log(data);
+    return res
+      .status(200)
+      .json({ statusCode: 200, message: "All posts fetched", data });
+  } catch (error) {
+    return res.status('500').send('Server Error')
+  }
+}
+
+const delPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await postModel.findByPk(postId)
+    if (!post) return res.status(404).send('Post not found')
+
+    const userEmail = req.userEmail;
+    if (post.email !== userEmail) return res.status(401).send("No Persmission to Delete Post")
+
+    await post.destroy();
+
+    return res.send('post deleted')
+  } catch (error) {
+    return res.status(500).send('Server Error')
+  }
+}
+
+module.exports = { addingPost, myPost, allPosts, delPost };
 
