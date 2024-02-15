@@ -17,6 +17,14 @@ const validateGetAllSchema = (body) => {
     return getAllCommentSchema.validate(body)
 }
 
+const updateCommentSchema = Joi.object({
+    commentText: Joi.string().required().max(255),
+})
+
+const validateUpdateComment = (body) => {
+    return updateCommentSchema.validate(body)
+}
+
 // const 
 
-module.exports = { validateCommentSchema, validateGetAllSchema, }
+module.exports = { validateCommentSchema, validateGetAllSchema, validateUpdateComment }

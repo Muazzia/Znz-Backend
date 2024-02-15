@@ -17,7 +17,7 @@ const commentModel = sequelize.define('comments', {
         defaultValue: false,
         allowNull: true
     },
-    postID: {
+    postId: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
