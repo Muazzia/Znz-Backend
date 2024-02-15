@@ -5,22 +5,15 @@ const validateLike = require("../../joiSchemas/Like/likeSchema");
 
 const likePost = async (req, res) => {
 
-  const { error, value: { likePostID } } = validateLike(req.body)
+  const { error, value: { postId } } = validateLike(req.body)
   if (error) return res.status(400).send(error.message)
 
-  const likeUserEmail = req.userEmail;
+  const userEmail = req.userEmail;
 
-  // checks
-  if (!likePostID || !likeUserEmail) {
-    return res.status(400).json({
-      statusCode: 400,
-      message: "likePostID or likeUserEmail is missing",
-    });
-  }
 
   try {
     const userExist = await userModel.findOne({
-      where: { email: likeUserEmail },
+      where: { email: userEmail },
     });
 
     if (!userExist) {
@@ -30,7 +23,7 @@ const likePost = async (req, res) => {
     }
 
     const postExist = await postModel.findOne({
-      where: { postID: likePostID },
+      where: { postID: postId },
     });
 
     if (!postExist) {
@@ -42,10 +35,9 @@ const likePost = async (req, res) => {
     // Check if the user has already liked the post
     const existingLike = await likePostModel.findOne({
       where: {
-        liker_email: likeUserEmail,
-        PostID: likePostID,
-      },
-      attributes: ['id', 'liker_email', 'PostID', 'isLiked', 'createdAt', 'updatedAt'], // Specify the attributes to include
+        userEmail,
+        postId: postId,
+      }
     });
 
     if (existingLike) {
@@ -54,18 +46,17 @@ const likePost = async (req, res) => {
         { isLiked: !existingLike.isLiked },
         {
           where: {
-            liker_email: likeUserEmail,
-            PostID: likePostID,
+            userEmail,
+            postId: postId,
           },
         }
       );
 
       const updatedLike = await likePostModel.findOne({
         where: {
-          liker_email: likeUserEmail,
-          PostID: likePostID,
-        },
-        attributes: ['id', 'liker_email', 'PostID', 'isLiked', 'createdAt', 'updatedAt'], // Specify the attributes to include
+          userEmail,
+          postId: postId,
+        }
       });
 
       const toggleAction = existingLike.isLiked ? "disliked" : "liked";
@@ -79,8 +70,8 @@ const likePost = async (req, res) => {
     } else {
       // If the user has not liked the post, like it
       const addLike = await likePostModel.create({
-        liker_email: likeUserEmail,
-        PostID: likePostID,
+        userEmail,
+        postId,
         isLiked: true,
       });
 

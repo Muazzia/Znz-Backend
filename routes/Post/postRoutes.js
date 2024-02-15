@@ -12,5 +12,10 @@ postRouter.route('/all-posts').get(checkExistingToken, checkJWT, allPosts)
 postRouter.route('/del-post/:id').delete(checkExistingToken, checkJWT, delPost)
 
 
+postRouter.get("/", allPosts)
+postRouter.get("/my-posts", myPost);
+postRouter.post("/", handleFileUpload, addingPost);
+postRouter.delete("/:id", delPost)
+
 
 module.exports = postRouter;

@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/connection");
-const userModel = require("./userModel");
 
 const postLikeModel = sequelize.define("likes", {
   id: {
@@ -9,22 +8,26 @@ const postLikeModel = sequelize.define("likes", {
     primaryKey: true,
     allowNull: false,
   },
-  liker_email: {
+  userEmail: {
     type: DataTypes.STRING,
     allowNull: false,
-    // references: {
-    //   model: userModel,
-    //   key: "email",
-    // },
+    references: {
+      model: "users",
+      key: "email",
+    },
   },
-  PostID: {
-    type: DataTypes.STRING,
+  postId: {
+    type: DataTypes.UUID,
     allowNull: false,
+    references: {
+      model: "posts",
+      key: "postID"
+    }
   },
   isLiked: {
     type: DataTypes.BOOLEAN,
     allowNull: true,
-    defaultValue: false,
+    defaultValue: true,
   },
 });
 

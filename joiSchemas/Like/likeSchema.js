@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 
 const schema = Joi.object({
-    likePostID: Joi.string().required().max(255)
+    postId: Joi.string().required().max(255)
 })
 
 const validateLike = (body) => {
