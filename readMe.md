@@ -30,6 +30,7 @@
 - [Add User Details](http://localhost:8080/api/user/add-extradetails) (when the user is logged in, a pop-up will appear for additional information)
 - [Get User Details](http://localhost:8080/api/user/user-extradetails)
 - [Add User Details(Bio,dob,phonenumber,address)](http://localhost:8080/api/user/user-details)
+- [Update User Personal Info](http://localhost:8080/api/user/user-personal)
 - [add Post](http://localhost:8080/api/user/add-post)
 - [Get Commests of Specific Post](http://localhost:8080/api/user/post/comment)(postId is req in body)
 - [Create Comment](http://localhost:8080/api/user/post/comment)(commentText & postId is required)
