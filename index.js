@@ -37,11 +37,15 @@ const checkExistingToken = require("./middleware/previousToken");
 //  middlewares
 app.use("/api/auth/user", authR);
 app.use("/api/user", userR);
+
 app.use("/api/user/story", checkExistingToken, checkJWT, storyR);
 
 app.use("/api/user/post", checkExistingToken, checkJWT, postR);
 app.use("/api/user/post/like", checkExistingToken, checkJWT, likeR);
 app.use('/api/user/post/comment', checkExistingToken, checkJWT, postCommentR)
+
+
+
 
 
 // server

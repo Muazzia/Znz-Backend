@@ -51,4 +51,28 @@ const validateUserData = (body) => {
     return userData.validate(body)
 }
 
-module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData }
+
+const specialCharacterValidation = Joi.string()
+    .custom((value, helpers) => {
+        if (/[{};"'~!@#$%^&*()_+=123456789/*\-+]/.test(value)) {
+            return helpers.error('any.invalid');
+        }
+        return value;
+    }, 'customValidation');
+const userPersonalInfoUpdateSchema = Joi.object({
+    firstName: specialCharacterValidation.required().min(3).max(255)
+        .messages({
+            'any.invalid': "Special characters or numeric values are not allowed in firstName.",
+        }),
+    lastName: specialCharacterValidation.required().min(3).max(255)
+        .messages({
+            'any.invalid': "Special characters or numeric values are not allowed in LastName.",
+        }),
+})
+
+
+const validateUserPersonalInfoUpdate = (body) => {
+    return userPersonalInfoUpdateSchema.validate(body)
+}
+
+module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate }

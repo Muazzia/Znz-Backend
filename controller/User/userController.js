@@ -5,7 +5,7 @@ const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
 const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
-const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData } = require("../../joiSchemas/User/userSchema");
+const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate } = require("../../joiSchemas/User/userSchema");
 const { cloudinary } = require("../../utils/cloudinary/cloudinary");
 const { bufferToString } = require("../../middleware/multer");
 const userDetailsModel = require("../../models/userAdditionalInformation");
@@ -284,6 +284,30 @@ const addUserDetails = async (req, res) => {
   }
 }
 
+const updateUserPersonalInfo = async (req, res) => {
+  try {
+    const { error, value } = validateUserPersonalInfoUpdate(req.body)
+    if (error) return res.status(400).send(error.message);
+
+    const userEmail = req.userEmail
+
+    const user = await userModel.findByPk(userEmail)
+    if (!user) return res.status(404).send('User Not Found')
+
+    await user.update({
+      ...value
+    })
+
+    return res.status(200).send({
+      message: "Updated",
+      user
+    })
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send('Server Error')
+  }
+}
+
 module.exports = {
   forgotPassword,
   setPassword,
@@ -294,5 +318,6 @@ module.exports = {
   addCoverPic,
   getUserExtraDetails,
   changePassword,
-  addUserDetails
+  addUserDetails,
+  updateUserPersonalInfo
 };
