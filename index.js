@@ -30,11 +30,14 @@ const storyR = require('./routes/Story/story')
 const postR = require("./routes/Post/postRoutes");
 const likeR = require("./routes/Like/likeRoutes");
 const postCommentR = require('./routes/PostComment/postComment')
+const tokenR = require('./routes/Token/token')
 
 const { checkJWT } = require("./middleware/authenticationMiddleware");
 const checkExistingToken = require("./middleware/previousToken");
 
 //  middlewares
+
+app.use('/api/validatetoken', checkExistingToken, checkJWT, tokenR)
 app.use("/api/auth/user", authR);
 app.use("/api/user", userR);
 

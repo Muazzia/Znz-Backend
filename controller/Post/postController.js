@@ -223,7 +223,6 @@ const allPosts = async (req, res) => {
         }
       };
     }));
-    console.log(data);
     return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data });

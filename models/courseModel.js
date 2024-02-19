@@ -13,8 +13,8 @@ const courseModel = sequelize.define("courses", {
         type: DataTypes.STRING,
         allowNull: false
     },
-    image: {
-        type: DataTypes.STRING,
+    images: {
+        type: DataTypes.TEXT,
         allowNull: false,
     },
     description: {
@@ -28,6 +28,30 @@ const courseModel = sequelize.define("courses", {
     status: {
         type: DataTypes.ENUM,
         allowNull: false,
-        values: ['pending', '']
+        values: ['pending', 'accepted', 'rejected']
+    },
+    authorEmail: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: 'users',
+            key: "email"
+        }
+    },
+    courseOverview: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 })
+
+sequelize
+    .sync()
+    .then(() => {
+        console.log("courseModel synchronized with the database(znz).");
+    })
+    .catch((error) => {
+        console.error("Error synchronizing courseModel", error);
+    });
+
+
+module.exports = courseModel
