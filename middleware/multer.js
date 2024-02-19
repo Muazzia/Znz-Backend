@@ -8,7 +8,7 @@ const parser = new DatauriParser();
 const storage = multer.memoryStorage();
 const allowedImageExtensions = [".png", ".jpeg", ".jpg"];
 
-const upload = multer({
+const uploadMultiple = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit per file
   fileFilter: (req, file, cb) => {
@@ -19,10 +19,24 @@ const upload = multer({
       cb(new Error(`File type not supported. Please upload a valid image file. ${allowedImageExtensions}`), false);
     }
   },
-}).array("images", 10); // Allow up to 10 files with the field name "images"
+}); // Allow up to 10 files with the field name "images"
+
+const uploadSingle = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const extname = path.extname(file.originalname).toLowerCase();
+    if (file.mimetype.startsWith("image/") && allowedImageExtensions.includes(extname)) {
+      cb(null, true);
+    } else {
+      cb(new Error("File type not supported. Please upload a valid image file."), false);
+    }
+  },
+})
 
 // Middleware to handle file upload
 const handleFileUpload = (req, res, next) => {
+  const upload = uploadMultiple.array('images', 10)
   upload(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
@@ -53,18 +67,41 @@ const handleFileUpload = (req, res, next) => {
   });
 };
 
-const uploadSingle = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const extname = path.extname(file.originalname).toLowerCase();
-    if (file.mimetype.startsWith("image/") && allowedImageExtensions.includes(extname)) {
-      cb(null, true);
-    } else {
-      cb(new Error("File type not supported. Please upload a valid image file."), false);
+
+
+const handleCourseUpload = (req, res, next) => {
+  const uploadCourse = uploadMultiple.array('images', 10);
+
+  uploadCourse(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer-specific error
+      console.log("Multer Error:", err);
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Image upload error",
+        error: err,
+      });
+    } else if (err) {
+      // Generic error
+      console.log("Error:", err);
+      return res.status(500).json({
+        statusCode: 500,
+        message: "Internal server error",
+        error: err.message,
+      });
     }
-  },
-})
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Missing required parameter - images",
+      });
+    }
+
+    console.log("File Uploaded Successfully!");
+    next();
+  });
+}
 
 const handleProfileUpload = (req, res, next) => {
   const uploadProfile = uploadSingle.single('profilePic');
@@ -173,4 +210,4 @@ const bufferToString = (req) => {
 }
 
 
-module.exports = { handleFileUpload, handleProfileUpload, bufferToString, handleCoverUpload, handleStoryUpload };
+module.exports = { handleFileUpload, handleProfileUpload, bufferToString, handleCoverUpload, handleStoryUpload, handleCourseUpload };

@@ -15,7 +15,14 @@ const courseModel = sequelize.define("courses", {
     },
     images: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
+        get() {
+            const rawValue = this.getDataValue("images");
+            return rawValue ? JSON.parse(rawValue) : null;
+        },
+        set(value) {
+            this.setDataValue("images", value ? JSON.stringify(value) : null);
+        },
     },
     description: {
         type: DataTypes.STRING,
@@ -41,6 +48,11 @@ const courseModel = sequelize.define("courses", {
     courseOverview: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    isDeleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: true
     }
 })
 
