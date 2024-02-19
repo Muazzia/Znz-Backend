@@ -2,6 +2,23 @@ const { bufferToString } = require('../../middleware/multer');
 const storiesModel = require('../../models/storiesModel');
 const { cloudinary } = require('../../utils/cloudinary/cloudinary');
 
+const userModel = require('../../models/userModel')
+
+const returnObjectWrapper = async (data, mail) => {
+    const user = await userModel.findByPk(mail)
+    if (!user) return {
+        message: "404 user dont found"
+    }
+    return {
+        user: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePic: user.profilePic
+        },
+        data
+    }
+}
+
 const getAllStories = async (req, res) => {
     try {
         const allStories = await storiesModel.findAll({
@@ -11,7 +28,8 @@ const getAllStories = async (req, res) => {
             }
         });
 
-        return res.send(allStories)
+        const newObject = await returnObjectWrapper(allStories, req.userEmail)
+        return res.send(newObject)
     } catch (error) {
         return res.status(500).send('Internal Server')
     }
@@ -27,7 +45,9 @@ const getStory = async (req, res) => {
         if (story.userEmail !== req.userEmail) return res.status(401).send("Unauthorized Can't Access")
 
         if (story.isDeleted) return res.status(404).send('Not Found')
-        return res.send(story)
+
+        const newObject = await returnObjectWrapper(story, req.userEmail)
+        return res.send(newObject)
     } catch (error) {
         res.status(500).send('Server error')
     }
@@ -43,7 +63,9 @@ const postStory = async (req, res) => {
 
         if (!story) return res.status(400).send('Cant upload')
 
-        return res.send(story)
+
+        const newObject = await returnObjectWrapper(story, req.userEmail)
+        return res.send(newObject)
     } catch (error) {
         return res.status(500).send('Server error')
     }
@@ -52,7 +74,6 @@ const postStory = async (req, res) => {
 const deleteStory = async (req, res) => {
     try {
         const id = req.params.id
-        console.log(id);
         const story = await storiesModel.findOne({ where: { storyId: id, isDeleted: false } });
 
         if (!story) return res.status(404).send('Not found')
@@ -84,7 +105,8 @@ const incrementView = async (req, res) => {
             noOfViews: story.noOfViews + 1
         })
 
-        return res.status(200).send(story)
+        const newObject = await returnObjectWrapper(story, req.userEmail)
+        return res.send(newObject)
     } catch (error) {
         res.status(500).send('Server Error')
     }
