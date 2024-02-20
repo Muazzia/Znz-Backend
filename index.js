@@ -32,6 +32,7 @@ const likeR = require("./routes/Like/likeRoutes");
 const postCommentR = require('./routes/PostComment/postComment')
 const tokenR = require('./routes/Token/token')
 const coursesR = require('./routes/Course/course')
+const followerR = require('./routes/Follower/follower')
 
 const { checkJWT } = require("./middleware/authenticationMiddleware");
 const checkExistingToken = require("./middleware/previousToken");
@@ -47,8 +48,10 @@ app.use("/api/user/story", checkExistingToken, checkJWT, storyR);
 app.use("/api/user/post", checkExistingToken, checkJWT, postR);
 app.use("/api/user/post/like", checkExistingToken, checkJWT, likeR);
 app.use('/api/user/post/comment', checkExistingToken, checkJWT, postCommentR)
+app.use('/api/user/follower', checkExistingToken, checkJWT, followerR)
 
 app.use('/api/courses', checkExistingToken, checkJWT, coursesR)
+
 
 
 
