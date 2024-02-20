@@ -24,7 +24,6 @@ const getAllStories = async (req, res) => {
         const allStories = await storiesModel.findAll({
             where: {
                 userEmail: req.userEmail,
-                isDeleted: false
             }
         });
 
@@ -43,8 +42,6 @@ const getStory = async (req, res) => {
         if (!story) return res.status(404).send('Not found')
 
         if (story.userEmail !== req.userEmail) return res.status(401).send("Unauthorized Can't Access")
-
-        if (story.isDeleted) return res.status(404).send('Not Found')
 
         const newObject = await returnObjectWrapper(story, req.userEmail)
         return res.send(newObject)
@@ -74,14 +71,12 @@ const postStory = async (req, res) => {
 const deleteStory = async (req, res) => {
     try {
         const id = req.params.id
-        const story = await storiesModel.findOne({ where: { storyId: id, isDeleted: false } });
+        const story = await storiesModel.findByPk(id);
 
         if (!story) return res.status(404).send('Not found')
 
-        await story.update({
-            isDeleted: true
-        });
-        return res.send('Deleted Successfully')
+        await story.destroy();
+        return res.send({ message: 'Deleted Successfully', story })
     } catch (error) {
         console.log(error);
         res.status(500).send('Server Error')
@@ -95,7 +90,6 @@ const incrementView = async (req, res) => {
             where: {
                 userEmail: req.userEmail,
                 storyId,
-                isDeleted: false
             }
         })
 

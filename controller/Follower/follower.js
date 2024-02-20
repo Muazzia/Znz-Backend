@@ -12,6 +12,7 @@ const getAllFollower = async (req, res) => {
             }
         });
 
+
         return res.send(followers)
     } catch (error) {
         return res.status(500).send('Server Error')
@@ -38,7 +39,16 @@ const createAFollower = async (req, res) => {
 
         const userEmail = req.userEmail;
 
-        const follower = await followerModel.create({ ...value, userEmail })
+        let follower = await followerModel.findOne({
+            where: {
+                userEmail,
+                followingEmail: value.followingEmail
+            }
+        })
+
+        if (follower) return res.status(400).send('Follower Already Exist')
+
+        follower = await followerModel.create({ ...value, userEmail })
         return res.status(201).send(follower)
     } catch (error) {
         return res.status(500).send('Server Error')
