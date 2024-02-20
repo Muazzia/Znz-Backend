@@ -5,11 +5,7 @@ const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary')
 
 const getAllCourses = async (req, res) => {
     try {
-        const courses = await courseModel.findAll({
-            where: {
-                isDeleted: false
-            }
-        });
+        const courses = await courseModel.findAll();
 
         return res.send(courses)
 
@@ -21,12 +17,7 @@ const getAllCourses = async (req, res) => {
 const getASpecificCourse = async (req, res) => {
     try {
         const id = req.params.id;
-        const course = await courseModel.findOne({
-            where: {
-                courseId: id,
-                isDeleted: false
-            }
-        });
+        const course = await courseModel.findByPk(id)
 
         if (!course) return res.status(404).send('Course not found')
 
@@ -42,15 +33,12 @@ const deleteASpecificCourse = async (req, res) => {
         const course = await courseModel.findOne({
             where: {
                 courseId: id,
-                isDeleted: false
             }
         });
 
         if (!course) return res.status(404).send('Course not found')
 
-        await course.update({
-            isDeleted: true
-        })
+        await course.destroy()
         return res.send({ message: "Deleted Successfully", course })
     } catch (error) {
         return res.status(500).send('Server Error')

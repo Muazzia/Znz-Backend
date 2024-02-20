@@ -48,11 +48,6 @@ const courseModel = sequelize.define("courses", {
     courseOverview: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    isDeleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: true
     }
 })
 
