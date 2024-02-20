@@ -12,11 +12,6 @@ const commentModel = sequelize.define('comments', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    isDeleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: true
-    },
     postId: {
         type: DataTypes.UUID,
         allowNull: false,

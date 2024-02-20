@@ -9,9 +9,7 @@ const getAllComments = async (req, res) => {
 
         const comments = await commentModel.findAll({
             where: {
-                isDeleted: false,
                 postId: value.postId,
-                isDeleted: false
             }
         })
 
@@ -54,11 +52,9 @@ const deleteComment = async (req, res) => {
 
         if (!comment) return res.status(404).send('Comment not found');
 
-        await comment.update({
-            isDeleted: true
-        })
+        await comment.destroy()
 
-        return res.status(200).send('Deleted Successfully')
+        return res.status(200).send({ message: 'Deleted Successfully', comment })
     } catch (error) {
         return res.status(500).send('Server Error')
     }
@@ -71,12 +67,7 @@ const updateCommentText = async (req, res) => {
 
         const commentId = req.params.id;
 
-        const comment = await commentModel.findOne({
-            where: {
-                commentId,
-                isDeleted: false
-            }
-        })
+        const comment = await commentModel.findByPk(commentId)
 
         if (!comment) return res.status(404).send('Comment Not Found')
 
