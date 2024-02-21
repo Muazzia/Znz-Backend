@@ -5,18 +5,27 @@ const { cloudinary } = require('../../utils/cloudinary/cloudinary');
 const userModel = require('../../models/userModel');
 const followerModel = require('../../models/followerModel');
 
-const returnObjectWrapper = async (data, mail) => {
+const returnObjectWrapper = async (data, mail, route) => {
+    const messageData = {
+        'get': "Stories Returned Successfully",
+        'post': "Story Created Successfully",
+        'delete': "Story Deleted Successfully",
+        "patch": "Story Updated Successfully"
+    }
+    let message = messageData[route]
+
     const user = await userModel.findByPk(mail)
     if (!user) return {
         message: "404 user dont found"
     }
     return {
+        message,
         user: {
             firstName: user.firstName,
             lastName: user.lastName,
             profilePic: user.profilePic
         },
-        data
+        stories: data
     }
 }
 
@@ -35,10 +44,34 @@ const getAllStories = async (req, res) => {
             }
         })
 
-        console.log(allData);
+        const followingEmails = allData.map(d => {
+            return d.dataValues.followingEmail
+        })
+        const tempArr = await Promise.all(followingEmails.map(async (fe, i) => {
+            try {
+                const user = await userModel.findByPk(fe)
+                if (!user) return null;
 
-        const newObject = await returnObjectWrapper(allStories, req.userEmail)
-        return res.send(newObject)
+                const stories = await storiesModel.findAll({
+                    where: {
+                        userEmail: fe
+                    }
+                });
+
+                if (stories.length === 0) return null;
+                const { firstName, lastName, profilePic } = user
+                return {
+                    user: { firstName, lastName, profilePic },
+                    stories
+                }
+            } catch (error) { }
+        }))
+
+        const finalArr = tempArr.filter(t => {
+            return t
+        })
+        const newObject = await returnObjectWrapper(allStories, req.userEmail, 'get')
+        return res.send({ ...newObject, followingStoriesData: finalArr })
     } catch (error) {
         console.log(error);
         return res.status(500).send('Internal Server')
@@ -54,7 +87,7 @@ const getStory = async (req, res) => {
 
         if (story.userEmail !== req.userEmail) return res.status(401).send("Unauthorized Can't Access")
 
-        const newObject = await returnObjectWrapper(story, req.userEmail)
+        const newObject = await returnObjectWrapper(story, req.userEmail, 'get')
         return res.send(newObject)
     } catch (error) {
         res.status(500).send('Server error')
@@ -72,7 +105,7 @@ const postStory = async (req, res) => {
         if (!story) return res.status(400).send('Cant upload')
 
 
-        const newObject = await returnObjectWrapper(story, req.userEmail)
+        const newObject = await returnObjectWrapper(story, req.userEmail, 'post')
         return res.send(newObject)
     } catch (error) {
         return res.status(500).send('Server error')
@@ -110,7 +143,7 @@ const incrementView = async (req, res) => {
             noOfViews: story.noOfViews + 1
         })
 
-        const newObject = await returnObjectWrapper(story, req.userEmail)
+        const newObject = await returnObjectWrapper(story, req.userEmail, 'patch')
         return res.send(newObject)
     } catch (error) {
         res.status(500).send('Server Error')
