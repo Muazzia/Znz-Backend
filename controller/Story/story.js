@@ -2,7 +2,8 @@ const { bufferToString } = require('../../middleware/multer');
 const storiesModel = require('../../models/storiesModel');
 const { cloudinary } = require('../../utils/cloudinary/cloudinary');
 
-const userModel = require('../../models/userModel')
+const userModel = require('../../models/userModel');
+const followerModel = require('../../models/followerModel');
 
 const returnObjectWrapper = async (data, mail) => {
     const user = await userModel.findByPk(mail)
@@ -21,15 +22,25 @@ const returnObjectWrapper = async (data, mail) => {
 
 const getAllStories = async (req, res) => {
     try {
+        const userEmail = req.userEmail
         const allStories = await storiesModel.findAll({
             where: {
-                userEmail: req.userEmail,
+                userEmail,
             }
         });
+
+        const allData = await followerModel.findAll({
+            where: {
+                userEmail
+            }
+        })
+
+        console.log(allData);
 
         const newObject = await returnObjectWrapper(allStories, req.userEmail)
         return res.send(newObject)
     } catch (error) {
+        console.log(error);
         return res.status(500).send('Internal Server')
     }
 }

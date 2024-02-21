@@ -203,7 +203,7 @@ const addProfilePic = async (req, res) => {
       profilePic: response.secure_url
     })
 
-    return res.status(201).send(user)
+    return res.status(201).send({ message: "Profule Pic Updated Successfully", user })
   } catch (error) {
     console.log(error);
     res.status(500).send('Server Error')
@@ -221,7 +221,7 @@ const addCoverPic = async (req, res) => {
       coverPic: response.secure_url
     })
 
-    return res.status(201).send(user)
+    return res.status(201).send({ message: "Cover Photo Updated Successfully", user })
   } catch (error) {
     console.log(error);
     res.status(500).send('Server Error')
@@ -231,7 +231,8 @@ const addCoverPic = async (req, res) => {
 const getUserExtraDetails = async (req, res) => {
   try {
     const userDetails = await userDetailsModel.findByPk(req.userEmail)
-    return res.send(userDetails)
+    if (!userDetails) return res.send({})
+    return res.send({ message: "User Extra Details", userDetails })
   } catch (error) {
     return res.status(500).send('Server error')
   }
@@ -278,7 +279,7 @@ const addUserDetails = async (req, res) => {
       ...value
     })
 
-    return res.status(200).send(user)
+    return res.status(200).send({ message: "Deatils Updated Successfully", user })
   } catch (error) {
     return res.status(500).send("Server Error")
   }
