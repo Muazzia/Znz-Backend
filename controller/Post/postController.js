@@ -153,8 +153,14 @@ const allPosts = async (req, res) => {
         console.log(commentsModified);
         return {
           ...post.dataValues,
-          likes: likesModified,
-          commnets: commentsModified,
+          likes: {
+            count: likesModified.length,
+            likes: likesModified
+          },
+          commnets: {
+            count: commentsModified.length,
+            comments: commentsModified
+          },
           images: JSON.parse(post.dataValues.images),
           user: {
             firstName: userData.firstName,
