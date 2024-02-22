@@ -40,45 +40,25 @@ const likePost = async (req, res) => {
       }
     });
 
+
     if (existingLike) {
-      // If the user has already liked the post, toggle isLiked
-      await likePostModel.update(
-        { isLiked: !existingLike.isLiked },
-        {
-          where: {
-            userEmail,
-            postId: postId,
-          },
-        }
-      );
-
-      const updatedLike = await likePostModel.findOne({
-        where: {
-          userEmail,
-          postId: postId,
-        }
-      });
-
-      const toggleAction = existingLike.isLiked ? "disliked" : "liked";
-      return res
-        .status(200)
-        .json({
-          statusCode: 200,
-          message: `Successfully ${toggleAction} the post`,
-          data: updatedLike, // Include the updated data in the response
-        });
-    } else {
-      // If the user has not liked the post, like it
+      await existingLike.destroy()
+      return res.status(200).send({
+        message: "Unliked Successfully"
+      })
+    }
+    else {
       const addLike = await likePostModel.create({
         userEmail,
         postId,
-        isLiked: true,
       });
 
       return res
         .status(200)
         .json({ statusCode: 200, message: "liked the post", data: addLike });
+
     }
+
   } catch (error) {
     console.error("Internal server error - likePost Controller", error);
     return res

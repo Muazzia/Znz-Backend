@@ -23,12 +23,7 @@ const postLikeModel = sequelize.define("likes", {
       model: "posts",
       key: "postID"
     }
-  },
-  isLiked: {
-    type: DataTypes.BOOLEAN,
-    allowNull: true,
-    defaultValue: true,
-  },
+  }
 });
 
 sequelize
