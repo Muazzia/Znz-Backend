@@ -125,9 +125,9 @@ const allPosts = async (req, res) => {
         const likesModified = await Promise.all(likes.map(async l => {
           try {
             const user = await userModel.findByPk(l.dataValues.userEmail)
-            const { firstName, lastName, profilePic } = user
+            const { firstName, lastName, profilePic, email } = user
             return {
-              user: { firstName, lastName, profilePic },
+              user: { firstName, lastName, profilePic, email },
               like: { ...l.dataValues }
             }
           } catch (error) { console.log('In post  error'); }
@@ -142,15 +142,14 @@ const allPosts = async (req, res) => {
         const commentsModified = await Promise.all(commnets.map(async (comment) => {
           try {
             const user = await userModel.findByPk(comment.dataValues.userEmail)
-            const { firstName, lastName, profilePic } = user
+            const { firstName, lastName, profilePic, email } = user
             return {
-              user: { firstName, lastName, profilePic },
+              user: { firstName, lastName, profilePic, email },
               comment: { ...comment.dataValues }
             }
           } catch (error) { }
         }))
 
-        console.log(commentsModified);
         return {
           ...post.dataValues,
           likes: {
@@ -165,7 +164,8 @@ const allPosts = async (req, res) => {
           user: {
             firstName: userData.firstName,
             lastName: userData.lastName,
-            profilePic: userData.profilePic
+            profilePic: userData.profilePic,
+            email: userData.email
           }
         };
       } catch (error) { }

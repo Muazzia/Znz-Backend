@@ -4,6 +4,7 @@ const { cloudinary } = require('../../utils/cloudinary/cloudinary');
 
 const userModel = require('../../models/userModel');
 const followerModel = require('../../models/followerModel');
+const { Op } = require('sequelize');
 
 const returnObjectWrapper = async (data, mail, route) => {
     const messageData = {
@@ -35,8 +36,12 @@ const getAllStories = async (req, res) => {
         const allStories = await storiesModel.findAll({
             where: {
                 userEmail,
+                createdAt: {
+                    [Op.gte]: new Date(new Date() - 24 * 60 * 60 * 1000), // createdAt >= 24 hours ago
+                },
             }
         });
+
 
         const allData = await followerModel.findAll({
             where: {
@@ -54,7 +59,10 @@ const getAllStories = async (req, res) => {
 
                 const stories = await storiesModel.findAll({
                     where: {
-                        userEmail: fe
+                        userEmail: fe,
+                        createdAt: {
+                            [Op.gte]: new Date(new Date() - 24 * 60 * 60 * 1000), // createdAt >= 24 hours ago
+                        },
                     }
                 });
 
