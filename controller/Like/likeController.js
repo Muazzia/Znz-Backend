@@ -44,7 +44,7 @@ const likePost = async (req, res) => {
     if (existingLike) {
       await existingLike.destroy()
       return res.status(200).send({
-        message: "Unliked Successfully"
+        message: "Unliked"
       })
     }
     else {
@@ -55,7 +55,7 @@ const likePost = async (req, res) => {
 
       return res
         .status(200)
-        .json({ statusCode: 200, message: "liked the post", data: addLike });
+        .json({ statusCode: 200, message: "Liked", data: addLike });
 
     }
 

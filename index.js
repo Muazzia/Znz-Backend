@@ -23,6 +23,9 @@ require("./association/association");
 // passport file for google oauth
 require("./utils/passport/passport");
 
+const cron = require('./utils/cronjob/cronjob')
+
+
 // routes import
 const authR = require("./routes/Auth/auth");
 const userR = require("./routes/User/userRoutes");
