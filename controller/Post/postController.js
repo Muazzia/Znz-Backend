@@ -1,7 +1,9 @@
 const postModel = require("../../models/postModel");
 const userModel = require('../../models/userModel.js')
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
-const { cloudinary, uploadToCloudinary } = require('../../utils/cloudinary/cloudinary.js')
+const { cloudinary, uploadToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
+const postLikeModel = require("../../models/likepostModel.js");
+const commentModel = require("../../models/commentModel.js");
 
 
 const myPost = async (req, res) => {
@@ -111,17 +113,61 @@ const allPosts = async (req, res) => {
       .json({ statusCode: 200, message: "No Post Found", data: postData })
 
     const data = await Promise.all(postData.map(async (post) => {
-      const userData = await userModel.findByPk(post.email);
-      return {
-        ...post.dataValues,
-        images: JSON.parse(post.dataValues.images),
-        user: {
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          profilePic: userData.profilePic
-        }
-      };
+      try {
+        const userData = await userModel.findByPk(post.email);
+        const likes = await postLikeModel.findAll({
+          where: {
+            postId: post.dataValues.postID
+          }
+        })
+
+        // group likes together on the basis of users
+        const likesModified = await Promise.all(likes.map(async l => {
+          try {
+            const user = await userModel.findByPk(l.dataValues.userEmail)
+            const { firstName, lastName, profilePic } = user
+            return {
+              user: { firstName, lastName, profilePic },
+              like: { ...l.dataValues }
+            }
+          } catch (error) { console.log('In post  error'); }
+        }))
+
+        const commnets = await commentModel.findAll({
+          where: {
+            postId: post.postID
+          }
+        })
+        // group the comments together on the basis of user
+        const commentsModified = await Promise.all(commnets.map(async (comment) => {
+          try {
+            const user = await userModel.findByPk(comment.dataValues.userEmail)
+            const { firstName, lastName, profilePic } = user
+            return {
+              user: { firstName, lastName, profilePic },
+              comment: { ...comment.dataValues }
+            }
+          } catch (error) { }
+        }))
+
+        console.log(commentsModified);
+        return {
+          ...post.dataValues,
+          likes: likesModified,
+          commnets: commentsModified,
+          images: JSON.parse(post.dataValues.images),
+          user: {
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            profilePic: userData.profilePic
+          }
+        };
+      } catch (error) { }
     }));
+
+
+
+
     return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data });
