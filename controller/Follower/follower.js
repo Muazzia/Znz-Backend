@@ -1,5 +1,6 @@
 const { validateCreateFollower } = require('../../joiSchemas/Follower/follower');
 const followerModel = require('../../models/followerModel');
+const userModel = require('../../models/userModel');
 
 
 const getAllFollower = async (req, res) => {
@@ -38,6 +39,9 @@ const createAFollower = async (req, res) => {
         if (error) return res.status(400).send(error.message)
 
         const userEmail = req.userEmail;
+
+        const validateFollowingUser = await userModel.findByPk(value.followingEmail)
+        if (!validateFollowingUser) return res.status(404).send('Following User Not Found')
 
         let follower = await followerModel.findOne({
             where: {
