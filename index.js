@@ -1,8 +1,8 @@
 // imports
 require("dotenv").config();
 const express = require("express");
-
 const cors = require("cors");
+
 
 const app = express();
 
@@ -14,7 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-const PORT = process.env.PORT;
 
 // database connection called here
 require("./database/connection");
@@ -22,7 +21,7 @@ require("./database/connection");
 require("./association/association");
 // passport file for google oauth
 require("./utils/passport/passport");
-
+// cron job to delete stories
 require('./utils/cronjob/cronjob')
 
 
@@ -41,7 +40,6 @@ const { checkJWT } = require("./middleware/authenticationMiddleware");
 const checkExistingToken = require("./middleware/previousToken");
 
 //  middlewares
-
 app.use('/api/validatetoken', checkExistingToken, checkJWT, tokenR)
 app.use("/api/auth/user", authR);
 app.use("/api/user", userR);
@@ -57,10 +55,8 @@ app.use('/api/courses', checkExistingToken, checkJWT, coursesR)
 
 
 
-
-
-
 // server
+const PORT = process.env.PORT;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`server is running at http://localhost:${PORT}`);
 });

@@ -30,8 +30,6 @@ const modifyReturnObject = async (data) => {
 
 const getAllComments = async (req, res) => {
     try {
-
-
         const postId = req.params.id
         const comments = await commentModel.findAll({
             where: {
