@@ -105,6 +105,9 @@ const getStory = async (req, res) => {
 const postStory = async (req, res) => {
     try {
         const imgResponse = await cloudinary.uploader.upload(bufferToString(req).content);
+        const user = await userModel.findByPk(req.userEmail)
+        if (!user) return res.status(404).send('Not Found')
+
         const story = await storiesModel.create({
             userEmail: req.userEmail,
             storyImage: imgResponse.secure_url

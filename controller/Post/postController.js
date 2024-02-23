@@ -163,6 +163,8 @@ const addingPost = async (req, res) => {
 
 
     const userEmail = req.userEmail;
+    const chkUser = await userModel.findByPk(userEmail)
+    if (!chkUser) return res.status(400).send('User not found')
 
     // Process each uploaded file
     const imageUrls = [];

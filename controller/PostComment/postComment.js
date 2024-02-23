@@ -64,6 +64,9 @@ const createComment = async (req, res) => {
 
         if (!post) return res.status(404).send('No Post Found')
 
+        const user = await userModel.findByPk(req.userEmail)
+        if (!user) return res.status(404).send('User not found')
+
         const comment = await commentModel.create({ commentText: value.commentText, userEmail: req.userEmail, postId: value.postId })
 
         return res.status(201).send(comment)
