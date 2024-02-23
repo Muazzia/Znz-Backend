@@ -29,13 +29,13 @@ const modifyData = async (allPosts, isMyPosts) => {
           } catch (error) { console.log('In post  error'); }
         }))
 
-        const commnets = await commentModel.findAll({
+        const comments = await commentModel.findAll({
           where: {
             postId: post.postID
           }
         })
         // group the comments together on the basis of user
-        const commentsModified = await Promise.all(commnets.map(async (comment) => {
+        const commentsModified = await Promise.all(comments.map(async (comment) => {
           try {
             const user = await userModel.findByPk(comment.dataValues.userEmail)
             const { firstName, lastName, profilePic, email } = user
@@ -52,7 +52,7 @@ const modifyData = async (allPosts, isMyPosts) => {
             count: likesModified.length,
             likes: likesModified
           },
-          commnets: {
+          comments: {
             count: commentsModified.length,
             comments: commentsModified
           },
@@ -89,13 +89,13 @@ const modifyData = async (allPosts, isMyPosts) => {
         } catch (error) { console.log('In post  error'); }
       }))
 
-      const commnets = await commentModel.findAll({
+      const comments = await commentModel.findAll({
         where: {
           postId: post.postID
         }
       })
       // group the comments together on the basis of user
-      const commentsModified = await Promise.all(commnets.map(async (comment) => {
+      const commentsModified = await Promise.all(comments.map(async (comment) => {
         try {
           const user = await userModel.findByPk(comment.dataValues.userEmail)
           const { firstName, lastName, profilePic, email } = user
@@ -112,7 +112,7 @@ const modifyData = async (allPosts, isMyPosts) => {
           count: likesModified.length,
           likes: likesModified
         },
-        commnets: {
+        comments: {
           count: commentsModified.length,
           comments: commentsModified
         },
@@ -201,7 +201,7 @@ const addingPost = async (req, res) => {
           count: 0,
           likes: []
         },
-        commnets: {
+        comments: {
           count: 0,
           comments: []
         },

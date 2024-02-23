@@ -1,19 +1,50 @@
 const { validateCommentSchema, validateGetAllSchema, validateUpdateComment } = require("../../joiSchemas/PostComment/postComment");
 const commentModel = require("../../models/commentModel");
 const postModel = require("../../models/postModel");
+const userModel = require("../../models/userModel");
+
+const modifyReturnObject = async (data) => {
+    try {
+        const newArr = await Promise.all(data.map(async (d) => {
+            try {
+                const user = await userModel.findByPk(d.dataValues.userEmail)
+                if (!user) return {}
+                const { firstName, lastName, profilePic, email } = user
+                return {
+                    ...d.dataValues,
+                    user: {
+                        firstName,
+                        lastName,
+                        profilePic,
+                        email
+                    }
+                }
+            } catch (error) { }
+        }))
+        return newArr
+    } catch (error) {
+        return []
+    }
+}
+
 
 const getAllComments = async (req, res) => {
     try {
-        const { error, value } = validateGetAllSchema(req.body)
-        if (error) return res.status(400).send(error.message)
 
+
+        const postId = req.params.id
         const comments = await commentModel.findAll({
             where: {
-                postId: value.postId,
+                postId
             }
         })
 
-        return res.send(comments);
+        const data = await modifyReturnObject(comments)
+        return res.send({
+            statusCode: 200,
+            message: "Comments received Successfully",
+            data
+        });
     } catch (error) {
         return res.status(500).send('Server Error')
     }

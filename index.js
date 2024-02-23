@@ -23,7 +23,7 @@ require("./association/association");
 // passport file for google oauth
 require("./utils/passport/passport");
 
-const cron = require('./utils/cronjob/cronjob')
+require('./utils/cronjob/cronjob')
 
 
 // routes import
