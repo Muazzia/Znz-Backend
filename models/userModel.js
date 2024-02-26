@@ -104,7 +104,7 @@ const userModel = sequelize.define(
       defaultValue: null
     },
     dob: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: true
     },
     address: {

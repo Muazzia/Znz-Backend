@@ -41,11 +41,22 @@ const validateChangePassword = (body) => {
 
 
 const userData = Joi.object({
-    dob: Joi.date(),
-    phoneNumber: Joi.string().max(11),
+    dob: Joi.string()
+        .isoDate()
+        .messages({
+            'string.isoDate': 'dob must be a valid ISO date(YYYY-MM-DD)',
+        }),
+    phoneNumber: Joi.string()
+        .pattern(/^[0-9]{1,11}$/)
+        .min(10)
+        .max(11)
+        .messages({
+            'string.pattern.base': 'phoneNumber must be a numeric string with a maximum length of 11',
+            'string.max': 'phoneNumber must have a maximum length of 11',
+        }),
     address: Joi.string().max(255),
     bio: Joi.string().max(255)
-})
+});
 
 const validateUserData = (body) => {
     return userData.validate(body)
