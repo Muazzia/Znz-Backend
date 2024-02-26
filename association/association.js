@@ -18,8 +18,10 @@ userModel.hasOne(userDetailsModel, {
 
 // association between users and posts
 userModel.hasMany(postModel, {
-  foreignKey: "email"
+  foreignKey: "email",
+  onDelete: "CASCADE"
 });
 postModel.belongsTo(userModel, {
   foreignKey: "email",
+  onDelete: "CASCADE"
 });

@@ -245,6 +245,7 @@ const allPosts = async (req, res) => {
 const delPost = async (req, res) => {
   try {
     const postId = req.params.id;
+    console.log(postId);
     const post = await postModel.findByPk(postId)
     if (!post) return res.status(404).send('Post not found')
 
@@ -255,6 +256,7 @@ const delPost = async (req, res) => {
 
     return res.send('post deleted')
   } catch (error) {
+    console.log(error);
     return res.status(500).send('Server Error')
   }
 }

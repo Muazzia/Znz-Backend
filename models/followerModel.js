@@ -15,7 +15,8 @@ const followerModel = sequelize.define('followers', {
         references: {
             model: 'users',
             key: "email"
-        }
+        },
+        onDelete: "CASCADE"
     },
     userEmail: {
         type: DataTypes.STRING,
@@ -23,7 +24,8 @@ const followerModel = sequelize.define('followers', {
         references: {
             model: "users",
             key: "email"
-        }
+        },
+        onDelete: 'CASCADE'
     }
 })
 

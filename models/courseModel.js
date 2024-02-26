@@ -43,7 +43,8 @@ const courseModel = sequelize.define("courses", {
         references: {
             model: 'users',
             key: "email"
-        }
+        },
+        onDelete: "CASCADE"
     },
     courseOverview: {
         type: DataTypes.STRING,

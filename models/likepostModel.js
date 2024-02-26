@@ -15,6 +15,7 @@ const postLikeModel = sequelize.define("likes", {
       model: "users",
       key: "email",
     },
+    onDelete: "CASCADE"
   },
   postId: {
     type: DataTypes.UUID,
@@ -22,7 +23,8 @@ const postLikeModel = sequelize.define("likes", {
     references: {
       model: "posts",
       key: "postID"
-    }
+    },
+    onDelete: "CASCADE"
   }
 });
 
