@@ -8,5 +8,14 @@ const validateCreateFollower = (body) => {
     return createFollwerSchema.validate(body)
 }
 
+const updateFollowStatus = Joi.object({
+    email: Joi.string().email().required(),
+    status: Joi.valid('accepted', 'rejected').required()
+})
 
-module.exports = { validateCreateFollower }
+const validateUpdateFollowStatus = (body) => {
+    return updateFollowStatus.validate(body)
+}
+
+
+module.exports = { validateCreateFollower, validateUpdateFollowStatus }

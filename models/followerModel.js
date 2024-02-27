@@ -26,7 +26,12 @@ const followerModel = sequelize.define('followers', {
             key: "email"
         },
         onDelete: 'CASCADE'
-    }
+    },
+    status: {
+        type: DataTypes.ENUM('pending', 'accepted', 'rejected'),
+        allowNull: true,
+        defaultValue: 'pending',
+    },
 })
 
 

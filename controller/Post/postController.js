@@ -140,6 +140,9 @@ const myPost = async (req, res) => {
       where: { email: userEmail },
     });
 
+    if (postData.length === 0) return res
+      .status(200)
+      .json({ statusCode: 200, message: "All posts fetched", data: [] })
 
     const data = await modifyData(postData, true)
 
@@ -254,7 +257,7 @@ const delPost = async (req, res) => {
 
     await post.destroy();
 
-    return res.send('post deleted')
+    return res.send({ message: 'post deleted', status: 200, data: post })
   } catch (error) {
     console.log(error);
     return res.status(500).send('Server Error')
