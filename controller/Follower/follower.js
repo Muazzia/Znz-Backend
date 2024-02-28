@@ -45,6 +45,8 @@ const createAFollower = async (req, res) => {
 
         const userEmail = req.userEmail;
 
+        if (userEmail === value.followingEmail) return res.status(400).send('Following Email and User Email cant be same')
+
         const validateFollowingUser = await userModel.findByPk(value.followingEmail)
         if (!validateFollowingUser) return res.status(404).send('Following User Not Found')
 
