@@ -11,6 +11,24 @@ const { bufferToString } = require("../../middleware/multer");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 
 // new
+const getUserData = async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await userModel.findByPk(email);
+
+    if (!user) return res.status(404).send('Not Found');
+
+    const data = { ...user.dataValues }
+    delete data.password
+    return res.send({ message: "Data Received Successfully", status: "200", data })
+
+
+  } catch (error) {
+    return res.status(500).send('Server Error')
+  }
+}
+
+
 const forgotPassword = async (req, res) => {
 
   const { error, value: { email } } = validateForgotPass(req.body);
@@ -320,5 +338,6 @@ module.exports = {
   getUserExtraDetails,
   changePassword,
   addUserDetails,
-  updateUserPersonalInfo
+  updateUserPersonalInfo,
+  getUserData
 };

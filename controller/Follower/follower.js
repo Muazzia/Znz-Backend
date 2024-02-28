@@ -3,19 +3,68 @@ const followerModel = require('../../models/followerModel');
 const userModel = require('../../models/userModel');
 
 
+
+const modifyData = async (followers, isUserReq) => {
+    try {
+        const data = await Promise.all(followers.map(async (follower) => {
+            try {
+                const userEmail = isUserReq ? follower.dataValues.userEmail : follower.dataValues.followingEmail;
+                const userData = await userModel.findByPk(userEmail)
+                if (!userData) return {};
+
+                const { firstName, lastName, profilePic, email, coverPic } = userData
+                return {
+                    ...follower.dataValues,
+                    user: {
+                        firstName,
+                        lastName,
+                        profilePic,
+                        email,
+                        coverPic
+                    }
+                }
+            } catch (error) { }
+        }))
+
+
+        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        return data ? data : []
+    } catch (error) {
+        return res.status(500).send('server Error')
+    }
+}
+
 const getAllFollower = async (req, res) => {
     try {
         const userEmail = req.userEmail;
 
         const followers = await followerModel.findAll({
             where: {
-                userEmail,
+                followingEmail: userEmail,
                 status: 'accepted'
             }
         });
 
+        const data = await modifyData(followers, true)
+        return res.send({ message: 'all Followers', staus: 200, data })
+    } catch (error) {
+        return res.status(500).send('Server Error')
+    }
+}
 
-        return res.send({ message: 'all Followers', staus: 200, data: followers })
+const getAllFollowing = async (req, res) => {
+    try {
+        const userEmail = req.userEmail;
+
+        const followers = await followerModel.findAll({
+            where: {
+                userEmail: userEmail,
+                status: 'accepted'
+            }
+        });
+
+        const data = await modifyData(followers, false)
+        return res.send({ message: 'all Following', staus: 200, data })
     } catch (error) {
         return res.status(500).send('Server Error')
     }
@@ -53,8 +102,7 @@ const createAFollower = async (req, res) => {
         let follower = await followerModel.findOne({
             where: {
                 userEmail,
-                followingEmail: value.followingEmail,
-                status: 'accepted'
+                followingEmail: value.followingEmail
             }
         })
 
@@ -119,8 +167,8 @@ const updateStatusOfFollower = async (req, res) => {
             status
         })
 
-
-        res.status(200).send({ message: "Status Updated Successfully", status: 200, data })
+        // const user=await userModel.findByPk(data.)
+        res.status(200).send({ message: "Status Updated Successfully", status: 200, data: { ...data.dataValues, } })
     } catch (error) {
         return res.status(500).send('Server Error')
     }
@@ -130,19 +178,18 @@ const getAllFollowRequests = async (req, res) => {
     try {
         const userEmail = req.userEmail;
 
-        const data = await followerModel.findAll({
+        const requests = await followerModel.findAll({
             where: {
                 followingEmail: userEmail,
                 status: 'pending'
             }
         })
 
-        if (!data) return res.status(404).send('Not Found');
-
+        const data = await modifyData(requests, true)
         return res.send({ message: 'All Requests Received', status: 200, data })
     } catch (error) {
         return res.status(500).send('Serve Error')
     }
 }
 
-module.exports = { getAllFollower, getASpeceficFollower, createAFollower, deleteAFollower, getAllFollowRequests, updateStatusOfFollower }
+module.exports = { getAllFollower, getASpeceficFollower, createAFollower, deleteAFollower, getAllFollowRequests, updateStatusOfFollower, getAllFollowing }

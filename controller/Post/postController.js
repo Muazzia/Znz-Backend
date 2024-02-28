@@ -127,6 +127,7 @@ const modifyData = async (allPosts, isMyPosts) => {
     } catch (error) { }
   }));
 
+  data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   return data ? data : []
 
 }
@@ -158,6 +159,28 @@ const myPost = async (req, res) => {
     });
   }
 };
+
+const userPost = async (req, res) => {
+  try {
+    const userEmail = req.params.email
+
+    const postData = await postModel.findAll({
+      where: { email: userEmail },
+    });
+
+    if (postData.length === 0) return res
+      .status(200)
+      .json({ statusCode: 200, message: "All posts fetched", data: [] })
+
+    const data = await modifyData(postData, true)
+
+    return res
+      .status(200)
+      .json({ statusCode: 200, message: "All posts fetched", data });
+  } catch (error) {
+    return res.status(500).send('Server Error')
+  }
+}
 
 const addingPost = async (req, res) => {
   try {
@@ -264,5 +287,5 @@ const delPost = async (req, res) => {
   }
 }
 
-module.exports = { addingPost, myPost, allPosts, delPost };
+module.exports = { addingPost, myPost, allPosts, delPost, userPost };
 
