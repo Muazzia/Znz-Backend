@@ -1,11 +1,12 @@
 const express = require("express");
 const userRoutes = express.Router();
 
-const { forgotPassword, setPassword, userDashboard, logout, additionalUserDetails, addProfilePic, getUserExtraDetails, changePassword, addCoverPic, addUserDetails, updateUserPersonalInfo } = require("../../controller/User/userController")
+const { forgotPassword, setPassword, userDashboard, logout, additionalUserDetails, addProfilePic, getUserExtraDetails, changePassword, addCoverPic, addUserDetails, updateUserPersonalInfo, getUserData } = require("../../controller/User/userController")
 const { checkJWT } = require("../../middleware/authenticationMiddleware");
 const checkPreviousToken = require("../../middleware/previousToken");
 const { handleProfileUpload, handleCoverUpload } = require("../../middleware/multer");
 
+userRoutes.route("/get-user/:email").get(checkPreviousToken, checkJWT, getUserData)
 
 
 userRoutes.route("/forgot-password").patch(forgotPassword);
