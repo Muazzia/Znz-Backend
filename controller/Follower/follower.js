@@ -109,7 +109,7 @@ const createAFollower = async (req, res) => {
         if (follower) return res.status(400).send('Follower Already Exist')
 
         follower = await followerModel.create({ ...value, userEmail })
-        return res.status(201).send({ message: "Follower Created", status: 201, data: follower })
+        return res.status(201).send({ message: "Follower Request Sent", status: 201, data: follower })
     } catch (error) {
         return res.status(500).send('Server Error')
     }
@@ -122,7 +122,7 @@ const deleteAFollower = async (req, res) => {
         const follower = await followerModel.findOne({
             where: {
                 followerId: id,
-                userEmail: req.userEmail
+                followingEmail: req.userEmail
             }
         });
         if (!follower) return res.status(404).send('Follower not Found')
