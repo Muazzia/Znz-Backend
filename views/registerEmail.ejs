@@ -1,0 +1,100 @@
+<!-- views/success.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    /* public/styles/success.css */
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+
+    h1 {
+        color: #14b8a6;
+    }
+
+    p {
+        color: #555;
+        max-width: 600px;
+        text-align: center;
+    }
+
+    /* Optional: Add some additional styling for a more polished look */
+    h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 1.2em;
+        line-height: 1.6;
+        margin-top: 0;
+    }
+
+    .resend-btn {
+        padding: 10px 12px 10px 12px;
+        border-radius: 12px;
+        background: #14b8a6;
+        color: white;
+        text-decoration: none;
+        border: none;
+
+    }
+
+    .resend-btn:hover {
+        cursor: pointer;
+        border: 1px solid black;
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success Page</title>
+</head>
+
+<body>
+    <% if (apiResponseCode===200) { %>
+        <h1>Email Verified!</h1>
+        <p>Your email has been successfully verified.</p>
+        <% } else { %>
+            <h1>Email Not Verified!</h1>
+            <p>Sorry, your email could not be verified. Please try again later.</p>
+            <p id="text"></p>
+            <button id="resendButton" class="resend-btn" onclick="handleOnClick()">Resend Email Again</button>
+
+
+            <% } %>
+</body>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwt = urlParams.get('jwt');
+
+    const handleOnClick = async () => {
+        const button = document.getElementById('resendButton');
+        button.disabled = true; // Disable the button
+
+        const res = await fetch(`http://192.168.1.65:8080/api/auth/user/resend-email?jwtToken=${jwt}`);
+        const para = document.getElementById('text');
+
+        if (res.status === 200) {
+            para.innerHTML = "Email Resend Successfully";
+        } else {
+            para.innerHTML = "Email Can't be Resend. Try Again Later";
+        }
+
+        // Re-enable the button after the response is processed
+        button.disabled = false;
+    }
+</script>
+</script>
+
+</html>
