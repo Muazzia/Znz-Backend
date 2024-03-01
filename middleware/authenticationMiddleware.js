@@ -19,6 +19,8 @@ function checkJWT(req, res, next) {
 
         req.isPassReset = decoded.isPassReset ? true : false
         req.userEmail = decoded.email;
+
+        if (!decoded.isEmailVerified) return res.status(401).json({ error: "Unauthorized: Email Not Verified" })
         next();
       }
     });
