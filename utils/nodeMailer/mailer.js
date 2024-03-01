@@ -15,44 +15,34 @@ const transporter = nodemailer.createTransport({
 });
 
 
-// newEmailQueue.process(async (job) => {
-//   console.log('in que');
-//   const { to, subject, text, html } = job.data;
-//   const mainOptions = {
-//     from: process.env.user_email,
-//     to,
-//     subject,
-//     text,
-//     html,
-//   };
+const handleRegUser = async (jwtToken, email) => {
+  const resetContent = `
+  <html>
+    <head>
+      <title>Verify Email</title>
+    </head>
+    <body style="font-family: Arial, sans-serif;">
+      <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #333;">Email Verification</h2>
+        <p>To reset the password, click on the link below:</p>
+        <a href=${process.env.verifyUserLink}?jwt=${jwtToken} target="_blank" style="text-decoration: none;">
+          <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Verify User Email
+          </button>
+        </a>
+      </div>
+    </body>
+  </html>
+`;
 
-//   try {
-//     // Process the job (send email)
-//     await transporter.sendMail(mainOptions);
-//     console.log(`Email sent to ${to}`);
-//     // Close the transport connection after processing
-//     transporter.close();
-//   } catch (error) {
-//     console.error("Error processing email job:", error.message);
-//   }
-// });
 
-// // Handle completed jobs
-// newEmailQueue.on("completed", (job) => {
-//   console.log(`Job ${job.id} has been completed`);
-// });
 
-// // Handle errors
-// newEmailQueue.on("failed", (job, error) => {
-//   console.error(`Job ${job.id} failed:`, error.message);
-// });
+  await transporter.sendMail({
+    to: email,
+    subject: "User Validation",
+    text: "Hello znz family, This email is to verify the gmail",
+    html: resetContent,
+  })
+}
 
-// const cleanQueue = async ()=>{
-//   await emailQueue.clean(0,'completed');
-// }
-
-// cleanQueue().then(()=>{
-//   console.log("queue cleaned. ready to start fresh")
-// })
-
-module.exports = { newEmailQueue, transporter };
+module.exports = { newEmailQueue, transporter, handleRegUser };
