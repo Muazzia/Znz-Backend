@@ -8,7 +8,26 @@ cloudinary.config({
     api_secret: process.env.cloud_Api_Secret_key,
 });
 
-const uploadToCloudinary = (file) => {
+const uploadToCloudinary = (file, folderPath) => {
+    if (folderPath) {
+        return new Promise((resolve, reject) => {
+            // Use the `upload` method from the Cloudinary SDK
+            cloudinary.uploader
+                .upload_stream({
+                    resource_type: "auto",
+                    folder: folderPath
+                }, (error, result) => {
+                    if (error) {
+                        console.error("Error in Cloudinary upload:", error);
+                        reject({ error });
+                    } else {
+                        console.log("Cloudinary Response:", result);
+                        resolve({ secure_url: result.secure_url });
+                    }
+                })
+                .end(file.buffer);
+        });
+    }
     return new Promise((resolve, reject) => {
         // Use the `upload` method from the Cloudinary SDK
         cloudinary.uploader

@@ -6,7 +6,7 @@ const tokenModel = require("../../models/blacklistModel");
 const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate } = require("../../joiSchemas/User/userSchema");
-const { cloudinary } = require("../../utils/cloudinary/cloudinary");
+const { cloudinary, uploadToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const { bufferToString } = require("../../middleware/multer");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 
@@ -215,16 +215,28 @@ const addProfilePic = async (req, res) => {
     const user = await userModel.findByPk(req.userEmail)
     if (!user) return res.status(400).send('user not found')
 
-    const response = await cloudinary.uploader.upload(bufferToString(req).content)
+
+    const cloudinaryResponse = await uploadToCloudinary(req.file, 'znz/user');
+    if (cloudinaryResponse.error) {
+      return res.status(500).json({
+        statusCode: 500,
+        message: "Internal server error during image upload",
+        error: cloudinaryResponse.error.message,
+      });
+    }
 
     await user.update({
-      profilePic: response.secure_url
+      profilePic: cloudinaryResponse.secure_url
     })
 
     return res.status(201).send({ message: "Profule Pic Updated Successfully", user })
   } catch (error) {
-    console.log(error);
-    res.status(500).send('Server Error')
+    // console.log(error);
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 }
 

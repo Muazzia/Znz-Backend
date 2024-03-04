@@ -196,7 +196,7 @@ const addingPost = async (req, res) => {
     const imageUrls = [];
     if (req.files) {
       for (const file of req.files) {
-        const cloudinaryResponse = await uploadToCloudinary(file);
+        const cloudinaryResponse = await uploadToCloudinary(file, 'znz/post');
         if (cloudinaryResponse.error) {
           return res.status(500).json({
             statusCode: 500,
