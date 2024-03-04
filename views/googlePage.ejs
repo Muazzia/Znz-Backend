@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +19,8 @@
             background-image: url('/images/login-concept-illustration_114360-739.avif');
             background-size: cover;
             background-position: center;
-            height: 100vh; /* Set the height to 100% of the viewport height */
+            height: 100vh;
+            /* Set the height to 100% of the viewport height */
         }
 
         #contentContainer {
@@ -29,7 +31,8 @@
         }
 
         #googleSignInButton {
-            display: inline-block; /* Set to inline-block to apply width and height */
+            display: inline-block;
+            /* Set to inline-block to apply width and height */
             background-color: #4285F4;
             color: #ffffff;
             padding: 15px 30px;
@@ -41,7 +44,8 @@
             text-transform: uppercase;
             transition: background-color 0.3s ease;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            text-decoration: none; /* Remove default link underline */
+            text-decoration: none;
+            /* Remove default link underline */
         }
 
         #googleSignInButton:hover {
@@ -49,10 +53,12 @@
         }
     </style>
 </head>
+
 <body>
     <div id="imageContainer"></div>
     <div id="contentContainer">
         <a href="http://localhost:8080/api/auth/user/auth/google" id="googleSignInButton">Sign in with Google</a>
     </div>
 </body>
+
 </html>

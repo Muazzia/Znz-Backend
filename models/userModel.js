@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/connection");
-const { allow } = require("joi");
 
 const userModel = sequelize.define(
   "users",
@@ -122,6 +121,11 @@ const userModel = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
+    isEmailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true
+    }
     // Add other columns as needed...
   },
   {

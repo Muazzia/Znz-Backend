@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { validateRegister, validateLogin } = require("../../joiSchemas/Auth/auth");
+const { handleRegUser } = require("../../utils/nodeMailer/mailer");
 
 
 const registerUser = async (req, res) => {
@@ -15,7 +16,11 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const chkOldUser = await userModel.findByPk(value.email)
-    if (chkOldUser) return res.status(400).send('User already exists')
+
+    if (chkOldUser) return res.status(400).send({
+      statusCode: 400,
+      message: "User Already Exist",
+    })
     const newUser = await userModel.create({
       ...value,
       password: hashedPassword,
@@ -28,10 +33,13 @@ const registerUser = async (req, res) => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
+        isEmailVerified: newUser.isEmailVerified
       },
       process.env.Secret_KEY,
       { expiresIn: process.env.expiry_time }
     );
+
+    await handleRegUser(jwtToken, newUser.email)
 
     return res.status(201).json({
       statusCode: 201,
@@ -48,6 +56,89 @@ const registerUser = async (req, res) => {
     });
   }
 };
+
+const verifyEmail = async (req, res) => {
+  try {
+    // throw new Error('Server')
+    const accessToken = req.query.jwt;
+    let userEmail;
+    // throw new Error('error asdkf')
+    jwt.verify(accessToken, process.env.Secret_KEY, (err, decoded) => {
+      if (err) {
+        console.error("JWT verification failed:", err.message);
+        return res.status(401).render('registerEmail', { apiResponseCode: 401 });
+      } else {
+        console.log("JWT decoded:", decoded);
+
+
+        userEmail = decoded.email;
+      }
+    });
+
+    const user = await userModel.findByPk(userEmail)
+    if (!user) return res.status(404).send({ message: 'Not Found' })
+
+    await user.update({
+      isEmailVerified: true
+    })
+
+    return res.status(200).render('registerEmail', { apiResponseCode: 200 })
+  } catch (error) {
+    return res.status(500).render('registerEmail', { apiResponseCode: 300 })
+    // return res.status(500).send('Server Error')
+  }
+}
+
+const resendEmail = async (req, res) => {
+  try {
+    const accessToken = req.query.jwtToken;
+
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(accessToken, process.env.Secret_KEY, { ignoreExpiration: true }, (err, decoded) => {
+        console.log(decoded);
+        if (err) {
+          // Handle the error, if needed
+          console.error(err);
+          resolve(null);
+        } else {
+          resolve(decoded);
+        }
+      });
+    });
+
+    // If token is not valid, reject the request with a 401 response
+    if (!decoded) {
+      return res.status(401).send('Invalid Token');
+    }
+
+    // Proceed with the rest of the code after decoding the JWT
+    const userEmail = decoded.email;
+
+    const user = await userModel.findByPk(userEmail);
+    if (!user) return res.status(404).send('User not Found');
+
+    const jwtToken = jwt.sign(
+      {
+        userID: user.userID,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      },
+      process.env.Secret_KEY,
+      { expiresIn: process.env.expiry_time }
+    );
+
+    await handleRegUser(jwtToken, user.email);
+
+    return res.status(200).send({ message: "Email Send Successfully" });
+  } catch (error) {
+    return res.status(500).send('Server Error');
+  }
+};
+
+
+
 
 const loginUser = async (req, res) => {
   const { error, value } = validateLogin(req.body)
@@ -69,6 +160,8 @@ const loginUser = async (req, res) => {
       });
     }
 
+    if (!userToFind.isEmailVerified) return res.status(401).send({ message: "Unothorized: Email not Verified" })
+
     // comparing the hashed password with the user's password in the req.body
     const validatePassword = await bcrypt.compare(
       password,
@@ -89,6 +182,7 @@ const loginUser = async (req, res) => {
         firstName: userToFind.firstName,
         lastName: userToFind.lastName,
         email: userToFind.email,
+        isEmailVerified: userToFind.isEmailVerified
       },
       process.env.Secret_KEY,
       { expiresIn: process.env.expiry_time }
@@ -131,9 +225,10 @@ const googleCallback = (req, res) => {
     }
 
     // Authentication successful, redirect to the profile page or any other route
-    return res.status(201).json({ message: "user login successfully!" });
+    console.log(user);
+    return res.status(201).json({ message: "user login successfully!", user });
   })(req, res);
 };
 
 
-module.exports = { registerUser, loginUser, googleLoginPage, authGoogle, googleCallback };
+module.exports = { registerUser, loginUser, googleLoginPage, authGoogle, googleCallback, verifyEmail, resendEmail };
