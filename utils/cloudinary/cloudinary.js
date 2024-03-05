@@ -9,14 +9,16 @@ cloudinary.config({
 });
 
 const uploadToCloudinary = (file, folderPath) => {
+    const uploadOptions = {
+        resource_type: "auto",
+        folder: folderPath,
+        quality: 70, // Adjust the quality value as needed (default is 80)
+    };
     if (folderPath) {
         return new Promise((resolve, reject) => {
             // Use the `upload` method from the Cloudinary SDK
             cloudinary.uploader
-                .upload_stream({
-                    resource_type: "auto",
-                    folder: folderPath
-                }, (error, result) => {
+                .upload_stream(uploadOptions, (error, result) => {
                     if (error) {
                         console.error("Error in Cloudinary upload:", error);
                         reject({ error });
@@ -44,5 +46,24 @@ const uploadToCloudinary = (file, folderPath) => {
     });
 };
 
+const deleteFromCloudinary = async (url) => {
+    try {
+        // console.log('exra', url.split('/'));
+        const publicId = url.split('/').pop().split('.')[0];
 
-module.exports = { cloudinary, uploadToCloudinary }
+        if (!publicId) {
+            throw new Error('Error extracting public_id from URL');
+        }
+        console.log(publicId);
+
+        // Delete the image using the public ID
+        const result = await cloudinary.uploader.destroy(`${publicId}`);
+        console.log('Image deleted successfully:', result);
+        return { message: 'successfully' };
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        return { error };
+    }
+};
+
+module.exports = { cloudinary, uploadToCloudinary, deleteFromCloudinary }
