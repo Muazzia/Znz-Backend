@@ -245,11 +245,19 @@ const addCoverPic = async (req, res) => {
     const user = await userModel.findByPk(req.userEmail)
     if (!user) return res.status(400).send('user not found')
 
-    const response = await cloudinary.uploader.upload(bufferToString(req).content)
+    const cloudinaryResponse = await uploadToCloudinary(req.file, 'znz/user');
+    if (cloudinaryResponse.error) {
+      return res.status(500).json({
+        statusCode: 500,
+        message: "Internal server error during image upload",
+        error: cloudinaryResponse.error.message,
+      });
+    }
 
     await user.update({
-      coverPic: response.secure_url
+      coverPic: cloudinaryResponse.secure_url
     })
+
 
     return res.status(201).send({ message: "Cover Photo Updated Successfully", user })
   } catch (error) {
