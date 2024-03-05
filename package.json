@@ -7,11 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "Muhammad",
-    "Hamza",
-    "Liaqat"
+    "Muaz",
+    "Zia"
   ],
-  "author": "Muhammad Hamza Liaqat",
+  "author": "Muaz Zia",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
