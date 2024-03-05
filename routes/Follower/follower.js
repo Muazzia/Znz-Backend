@@ -1,15 +1,18 @@
 const express = require('express');
 const followerRouter = express.Router();
 
-const { getAllFollower, getASpeceficFollower, createAFollower, deleteAFollower, updateStatusOfFollower, getAllFollowRequests, getAllFollowing } = require('../../controller/Follower/follower');
+const { getAllFollower, getASpeceficFollower, createAFollowRequest, deleteAFollower, updateStatusOfFollower, getAllFollowRequests, getAllFollowing, deleteAFollowing } = require('../../controller/Follower/follower');
 
-followerRouter.get('/', getAllFollower)
+followerRouter.get('/follower', getAllFollower)
 followerRouter.get('/following', getAllFollowing)
 followerRouter.get('/request', getAllFollowRequests)
 
 followerRouter.get('/:id', getASpeceficFollower)
-followerRouter.post('/', createAFollower)
-followerRouter.delete('/:id', deleteAFollower)
+
+followerRouter.post('/', createAFollowRequest)
+
+followerRouter.delete('/follower/:email', deleteAFollower)
+followerRouter.delete('/following/:email', deleteAFollowing)
 
 followerRouter.patch('/:id', updateStatusOfFollower)
 

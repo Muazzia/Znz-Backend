@@ -1,6 +1,7 @@
 const { validateCreateFollower, validateUpdateFollowStatus } = require('../../joiSchemas/Follower/follower');
 const followerModel = require('../../models/followerModel');
 const userModel = require('../../models/userModel');
+const { Op } = require('sequelize');
 
 
 
@@ -59,7 +60,7 @@ const getAllFollowing = async (req, res) => {
         const followers = await followerModel.findAll({
             where: {
                 userEmail: userEmail,
-                status: 'accepted'
+                // status: 'accepted'
             }
         });
 
@@ -87,7 +88,7 @@ const getASpeceficFollower = async (req, res) => {
     }
 }
 
-const createAFollower = async (req, res) => {
+const createAFollowRequest = async (req, res) => {
     try {
         const { error, value } = validateCreateFollower(req.body)
         if (error) return res.status(400).send(error.message)
@@ -106,7 +107,7 @@ const createAFollower = async (req, res) => {
             }
         })
 
-        if (follower) return res.status(400).send('Follower Already Exist')
+        if (follower) return res.status(400).send({ status: 400, message: 'You are already Following' })
 
         follower = await followerModel.create({ ...value, userEmail })
         return res.status(201).send({ message: "Follower Request Sent", status: 201, data: follower })
@@ -117,24 +118,54 @@ const createAFollower = async (req, res) => {
 
 const deleteAFollower = async (req, res) => {
     try {
-        const id = req.params.id;
+
+        const email = req.params.email;
 
         const follower = await followerModel.findOne({
             where: {
-                followerId: id,
-                followingEmail: req.userEmail
-            }
+                userEmail: email,
+                followingEmail: req.userEmail,
+            },
         });
+
         if (!follower) return res.status(404).send('Follower not Found')
 
         await follower.destroy();
         return res.send({
-            message: "Deleted Successfully",
+            message: "Follower Deleted Successfully",
             status: 200,
             data: follower
         })
 
     } catch (error) {
+        console.log(error);
+        return res.status(500).send(error)
+
+    }
+}
+
+const deleteAFollowing = async (req, res) => {
+    try {
+        const email = req.params.email;
+
+        const follower = await followerModel.findOne({
+            where: {
+                userEmail: req.userEmail,
+                followingEmail: email,
+            },
+        });
+
+        if (!follower) return res.status(404).send('Following User not Found')
+
+        await follower.destroy();
+        return res.send({
+            message: "Following Deleted Successfully",
+            status: 200,
+            data: follower
+        })
+
+    } catch (error) {
+        console.log(error);
         return res.status(500).send(error)
 
     }
@@ -192,4 +223,4 @@ const getAllFollowRequests = async (req, res) => {
     }
 }
 
-module.exports = { getAllFollower, getASpeceficFollower, createAFollower, deleteAFollower, getAllFollowRequests, updateStatusOfFollower, getAllFollowing }
+module.exports = { getAllFollower, getASpeceficFollower, createAFollowRequest, deleteAFollowing, deleteAFollower, getAllFollowRequests, updateStatusOfFollower, getAllFollowing }

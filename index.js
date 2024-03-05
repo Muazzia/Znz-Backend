@@ -49,7 +49,7 @@ app.use("/api/user/story", checkExistingToken, checkJWT, storyR);
 app.use("/api/user/post", checkExistingToken, checkJWT, postR);
 app.use("/api/user/post/like", checkExistingToken, checkJWT, likeR);
 app.use('/api/user/post/comment', checkExistingToken, checkJWT, postCommentR)
-app.use('/api/user/follower', checkExistingToken, checkJWT, followerR)
+app.use('/api/user/connection', checkExistingToken, checkJWT, followerR)
 
 app.use('/api/courses', checkExistingToken, checkJWT, coursesR)
 
