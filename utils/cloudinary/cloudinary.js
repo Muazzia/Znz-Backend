@@ -1,18 +1,18 @@
 const cloudinary = require("cloudinary").v2;
 
 
-
 cloudinary.config({
     cloud_name: process.env.cloud_name,
     api_key: process.env.cloud_Api_key,
     api_secret: process.env.cloud_Api_Secret_key,
 });
 
+
 const uploadToCloudinary = (file, folderPath) => {
     const uploadOptions = {
         resource_type: "auto",
         folder: folderPath,
-        quality: 70, // Adjust the quality value as needed (default is 80)
+        quality: 60, // Adjust the quality value as needed (default is 80)
     };
     if (folderPath) {
         return new Promise((resolve, reject) => {
