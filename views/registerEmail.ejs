@@ -77,22 +77,32 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const jwt = urlParams.get('jwt');
+    // const backendLink = urlParams.get('backendLink')
+    const backendLink = "http://192.168.0.108:8080"
+
 
     const handleOnClick = async () => {
-        const button = document.getElementById('resendButton');
-        button.disabled = true; // Disable the button
+        try {
+            const button = document.getElementById('resendButton');
+            button.disabled = true; // Disable the button
+            button.style.backgroundColor = '#a0a0a0';
+            const res = await fetch(`${backendLink}/api/auth/user/resend-email?jwtToken=${jwt}`);
+            const para = document.getElementById('text');
 
-        const res = await fetch(`http://192.168.1.65:8080/api/auth/user/resend-email?jwtToken=${jwt}`);
-        const para = document.getElementById('text');
+            if (res.status === 200) {
+                para.innerHTML = "Email Resend Successfully";
+            } else {
+                para.innerHTML = "Email Can't be Resend. Try Again Later";
+            }
 
-        if (res.status === 200) {
-            para.innerHTML = "Email Resend Successfully";
-        } else {
-            para.innerHTML = "Email Can't be Resend. Try Again Later";
+
+            button.disabled = false;
+            button.style.backgroundColor = '#14b8a6';
+
+        } catch (err) {
+            console.log(err);
         }
 
-        // Re-enable the button after the response is processed
-        button.disabled = false;
     }
 </script>
 </script>

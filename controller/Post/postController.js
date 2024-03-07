@@ -1,7 +1,7 @@
 const postModel = require("../../models/postModel");
 const userModel = require('../../models/userModel.js')
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
-const { cloudinary, uploadToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
+const { cloudinary, uploadToCloudinary, deleteFromCloudinary } = require('../../utils/cloudinary/cloudinary.js');
 const postLikeModel = require("../../models/likepostModel.js");
 const commentModel = require("../../models/commentModel.js");
 
@@ -277,6 +277,13 @@ const delPost = async (req, res) => {
 
     const userEmail = req.userEmail;
     if (post.email !== userEmail) return res.status(401).send("No Persmission to Delete Post")
+
+    // for (let image in post.images) {
+    //   console.log(post.images[image]);
+    //   const cloudinaryResponse = await deleteFromCloudinary(post.images[image])
+    //   if (cloudinaryResponse.error) return res.status(500).send({ message: "Can't delete at the moment", status: 500 })
+    // }
+
 
     await post.destroy();
 

@@ -6,6 +6,7 @@ const { validateRegister, validateLogin } = require("../../joiSchemas/Auth/auth"
 const { handleRegUser } = require("../../utils/nodeMailer/mailer");
 
 
+
 const registerUser = async (req, res) => {
   const { error, value } = validateRegister(req.body)
   if (error) return res.status(400).send(error.message)
@@ -24,7 +25,6 @@ const registerUser = async (req, res) => {
     const newUser = await userModel.create({
       ...value,
       password: hashedPassword,
-      checked: null,
     });
 
     const jwtToken = jwt.sign(
@@ -33,6 +33,7 @@ const registerUser = async (req, res) => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
+        role: newUser.role,
         isEmailVerified: newUser.isEmailVerified
       },
       process.env.Secret_KEY,
@@ -57,34 +58,85 @@ const registerUser = async (req, res) => {
   }
 };
 
+const registerSuperAdmin = async (req, res) => {
+  try {
+    const { error, value } = validateRegister(req.body)
+    if (error) return res.status(400).send(error.message)
+
+
+    const { password } = value
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const chkOldUser = await userModel.findByPk(value.email)
+
+    if (chkOldUser) return res.status(400).send({
+      statusCode: 400,
+      message: "User Already Exist",
+    })
+
+
+    const newUser = await userModel.create({
+      ...value,
+      password: hashedPassword,
+      role: "admin"
+    });
+
+    const jwtToken = jwt.sign(
+      {
+        userID: newUser.userID,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        role: newUser.role,
+        isEmailVerified: newUser.isEmailVerified
+      },
+      process.env.Secret_KEY,
+      { expiresIn: process.env.expiry_time }
+    );
+
+    await handleRegUser(jwtToken, newUser.email)
+
+    return res.status(201).json({
+      statusCode: 201,
+      message: "Super-admin created successfully",
+      user: newUser,
+      token: jwtToken
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: "Server Error", status: 500 })
+  }
+}
+
 const verifyEmail = async (req, res) => {
   try {
     // throw new Error('Server')
     const accessToken = req.query.jwt;
     let userEmail;
-    // throw new Error('error asdkf')
+
     jwt.verify(accessToken, process.env.Secret_KEY, (err, decoded) => {
       if (err) {
         console.error("JWT verification failed:", err.message);
         return res.status(401).render('registerEmail', { apiResponseCode: 401 });
       } else {
         console.log("JWT decoded:", decoded);
+        (async () => {
+          userEmail = decoded.email;
+          const user = await userModel.findByPk(userEmail)
+          if (!user) return res.status(404).send({ status: 404, message: 'Not Found' })
 
+          await user.update({
+            isEmailVerified: true
+          })
 
-        userEmail = decoded.email;
+          return res.status(200).render('registerEmail', { apiResponseCode: 200 })
+        })()
       }
     });
-
-    const user = await userModel.findByPk(userEmail)
-    if (!user) return res.status(404).send({ message: 'Not Found' })
-
-    await user.update({
-      isEmailVerified: true
-    })
-
-    return res.status(200).render('registerEmail', { apiResponseCode: 200 })
   } catch (error) {
-    return res.status(500).render('registerEmail', { apiResponseCode: 300 })
+    return res.status(500).render('registerEmail', { apiResponseCode: 500 })
     // return res.status(500).send('Server Error')
   }
 }
@@ -182,6 +234,7 @@ const loginUser = async (req, res) => {
         firstName: userToFind.firstName,
         lastName: userToFind.lastName,
         email: userToFind.email,
+        role: userToFind.role,
         isEmailVerified: userToFind.isEmailVerified
       },
       process.env.Secret_KEY,
@@ -231,4 +284,4 @@ const googleCallback = (req, res) => {
 };
 
 
-module.exports = { registerUser, loginUser, googleLoginPage, authGoogle, googleCallback, verifyEmail, resendEmail };
+module.exports = { registerUser, registerSuperAdmin, loginUser, googleLoginPage, authGoogle, googleCallback, verifyEmail, resendEmail };

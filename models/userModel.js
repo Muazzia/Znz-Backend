@@ -125,6 +125,10 @@ const userModel = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: true
+    },
+    role: {
+      type: DataTypes.ENUM('user', 'admin'),
+      defaultValue: 'user'
     }
     // Add other columns as needed...
   },
