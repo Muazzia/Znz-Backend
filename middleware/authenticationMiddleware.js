@@ -42,7 +42,7 @@ function adminCheckJWT(req, res, next) {
     const userInfo = jwt.decode(accessToken);
     console.log(userInfo);
 
-    if (userInfo.isAdmin) {
+    if (userInfo.role === "admin") {
       jwt.verify(accessToken, process.env.Secret_KEY, (err, decoded) => {
         if (err) {
           console.error("JWT verification failed:", err.message);
