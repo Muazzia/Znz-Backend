@@ -9,9 +9,14 @@ const courseModel = sequelize.define("courses", {
         allowNull: false,
         primaryKey: true
     },
-    title: {
+    parentCategory: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    subCategories: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: []
     },
     images: {
         type: DataTypes.TEXT,
@@ -24,18 +29,35 @@ const courseModel = sequelize.define("courses", {
             this.setDataValue("images", value ? JSON.stringify(value) : null);
         },
     },
-    description: {
+    title: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    details: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    status: {
+    mode: {
         type: DataTypes.ENUM,
         allowNull: false,
-        values: ['pending', 'accepted', 'rejected']
+        values: ['onsite', 'online']
+    },
+    courseDuration: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    classDays: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: []
+    },
+    classDuration: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    courseFee: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: false
     },
     authorEmail: {
         type: DataTypes.STRING,
@@ -46,10 +68,11 @@ const courseModel = sequelize.define("courses", {
         },
         onDelete: "CASCADE"
     },
-    courseOverview: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
+    // status: {
+    //     type: DataTypes.ENUM,
+    //     allowNull: false,
+    //     values: ['pending', 'accepted', 'rejected']
+    // },
 })
 
 sequelize
