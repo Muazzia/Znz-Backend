@@ -1,4 +1,5 @@
 const userModel = require("../../models/userModel");
+const { Op } = require('sequelize')
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
@@ -16,12 +17,37 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const chkOldUser = await userModel.findByPk(value.email)
+    // const chkOldUser = await userModel.findByPk(value.email)
 
-    if (chkOldUser) return res.status(400).send({
-      statusCode: 400,
-      message: "User Already Exist",
-    })
+    // if (chkOldUser) return res.status(400).send({
+    //   statusCode: 400,
+    //   message: "User Already Exist",
+    // })
+
+    const chkOldUser = await userModel.findOne({
+      where: {
+        [Op.or]: [
+          { email: value.email },
+          { firstName: value.firstName } // Add additional condition to check firstName
+        ]
+      }
+    });
+
+    if (chkOldUser) {
+      if (chkOldUser.email === value.email) {
+        return res.status(400).send({
+          statusCode: 400,
+          message: "User with this email already exists",
+        });
+      } else if (chkOldUser.firstName === value.firstName) {
+        return res.status(400).send({
+          statusCode: 400,
+          message: "User with this Name is already registered",
+        });
+      }
+    }
+
+
     const newUser = await userModel.create({
       ...value,
       password: hashedPassword,
