@@ -19,6 +19,7 @@ passport.use(
         const email = profile._json.email
 
         let user = await userModel.findByPk(email);
+        if (user && user.isEmailVerified) return done(null, user)
 
 
         if (!user) {
