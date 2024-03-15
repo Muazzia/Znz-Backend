@@ -1,6 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const userModel = require("../../models/userModel");
+const { validateRegister } = require("../../joiSchemas/Auth/auth");
 
 passport.use(
   new GoogleStrategy(
@@ -11,27 +12,29 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if the user with this Google ID already exists in the database
-        const firstName = profile.name.firstName;
-        const lastName = profile.name.familyName;
-        const profilePic = profile.photos[0].value
-        const email = profile.emails[0].value
+
+        const firstName = profile._json.given_name
+        const lastName = profile._json.familyName || firstName
+        const profilePic = profile._json.picture
+        const email = profile._json.email
 
         let user = await userModel.findByPk(email);
 
+
         if (!user) {
-          // If the user doesn't exist, create a new user in the database
+          console.log(firstName);
           user = await userModel.create({
             googleUser: profile.id,
             email,
             firstName,
             lastName,
-            profilePic
+            profilePic,
+            isEmailVerified: true
           });
         }
 
-        // Call done with the user object to indicate successful authentication
-        // console.log(user);
+
+        if (!user.isEmailVerified) return done('Email is already registered Please verify It first')
         return done(null, user);
       } catch (error) {
         // Handle error
@@ -41,6 +44,7 @@ passport.use(
     }
   )
 );
+
 
 passport.serializeUser((user, done) => {
   done(null, user);

@@ -5,6 +5,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { validateRegister, validateLogin } = require("../../joiSchemas/Auth/auth");
 const { handleRegUser } = require("../../utils/nodeMailer/mailer");
+const { responseObject } = require("../../utils/responseObject");
 
 
 
@@ -216,8 +217,6 @@ const resendEmail = async (req, res) => {
 };
 
 
-
-
 const loginUser = async (req, res) => {
   const { error, value } = validateLogin(req.body)
   if (error) return res.status(400).send(error.message)
@@ -240,6 +239,7 @@ const loginUser = async (req, res) => {
 
     if (!userToFind.isEmailVerified) return res.status(401).send({ message: "Unothorized: Email not Verified" })
 
+    if (userToFind.googleUser) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
     // comparing the hashed password with the user's password in the req.body
     const validatePassword = await bcrypt.compare(
       password,
@@ -304,8 +304,20 @@ const googleCallback = (req, res) => {
     }
 
     // Authentication successful, redirect to the profile page or any other route
-    console.log(user);
-    return res.status(201).json({ message: "user login successfully!", user });
+    // console.log(user);
+    const jwtToken = jwt.sign(
+      {
+        userID: user.userID,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified
+      },
+      process.env.Secret_KEY,
+      { expiresIn: process.env.expiry_time }
+    );
+    return res.status(201).json({ message: "user login successfully!", user, token: jwtToken });
   })(req, res);
 };
 
