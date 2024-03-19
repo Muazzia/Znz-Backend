@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize')
 
-const sequelize = require('../database/connection')
+const sequelize = require('../database/connection');
+const userModel = require('./userModel');
 
 const courseModel = sequelize.define("courses", {
     courseId: {
@@ -74,6 +75,8 @@ const courseModel = sequelize.define("courses", {
     //     values: ['pending', 'accepted', 'rejected']
     // },
 })
+
+courseModel.belongsTo(userModel, { foreignKey: 'authorEmail', targetKey: 'email' });
 
 sequelize
     .sync()
