@@ -1,4 +1,4 @@
-const { validateCreateCourse } = require('../../joiSchemas/Course/course');
+const { validateCreateCourse, validateUpdateCourse } = require('../../joiSchemas/Course/course');
 const courseModel = require('../../models/courseModel');
 const userModel = require('../../models/userModel');
 const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary');
@@ -42,6 +42,7 @@ const deleteASpecificCourse = async (req, res) => {
         const course = await courseModel.findOne({
             where: {
                 courseId: id,
+                authorEmail: req.userEmail
             },
             ...userAtrributesObject
 
@@ -68,6 +69,13 @@ const createCourse = async (req, res) => {
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
 
         const imageUrls = [];
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                statusCode: 400,
+                message: "Missing required parameter - images",
+            });
+        }
         if (req.files) {
             for (const file of req.files) {
                 const cloudinaryResponse = await uploadToCloudinary(file);
@@ -92,5 +100,63 @@ const createCourse = async (req, res) => {
     }
 }
 
+const updateCourse = async (req, res) => {
+    try {
+        const { error, value } = validateUpdateCourse(req.body)
+        if (error) return res.status(400).send({ status: 400, message: error.message });
 
-module.exports = { getAllCourses, getASpecificCourse, deleteASpecificCourse, createCourse }
+        const userEmail = req.userEmail
+
+        const user = await userModel.findByPk(userEmail)
+        if (!user) return res.status(404).send(responseObject('User not Found', 404))
+
+
+        const id = req.params.id;
+        let course = await courseModel.findOne({
+            where: {
+                courseId: id,
+                authorEmail: userEmail
+            }
+        })
+
+        if (!course) return res.status(404).send(responseObject('Course Not Found', 404, "", "Course Not Exist"))
+
+        let imageUrls = [...course.images];
+
+
+
+        if (value.deletedImages && value.deletedImages.length !== 0)
+            if (imageUrls.length === 1) return res.status(400).send(responseObject("Can't Delete Last Image", 400, "", "Need Atleast One Image"))
+        imageUrls = imageUrls.filter(imageUrl => {
+            console.log(value.deletedImages.includes(imageUrl));
+            return !value.deletedImages.includes(imageUrl)
+        })
+
+        if (req.files) {
+            for (const file of req.files) {
+                const cloudinaryResponse = await uploadToCloudinary(file);
+                if (cloudinaryResponse.error) {
+                    return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
+                }
+
+                imageUrls.push(cloudinaryResponse.secure_url);
+            }
+        }
+
+
+        // let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
+
+        await course.update({ ...value, authorEmail: userEmail, images: imageUrls })
+
+        if (!course) return res.status(404).send(responseObject("Course not updated", 404))
+        course = await courseModel.findByPk(course.courseId, { ...userAtrributesObject })
+
+
+        return res.send(responseObject("Course Updated Successfully", 200, course))
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(responseObject('Server Error', 500))
+    }
+}
+
+module.exports = { getAllCourses, getASpecificCourse, deleteASpecificCourse, createCourse, updateCourse }

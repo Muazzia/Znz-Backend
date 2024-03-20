@@ -91,12 +91,12 @@ const handleCourseUpload = (req, res, next) => {
       });
     }
 
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        statusCode: 400,
-        message: "Missing required parameter - images",
-      });
-    }
+    // if (!req.files || req.files.length === 0) {
+    //   return res.status(400).json({
+    //     statusCode: 400,
+    //     message: "Missing required parameter - images",
+    //   });
+    // }
 
     console.log("File Uploaded Successfully!");
     next();

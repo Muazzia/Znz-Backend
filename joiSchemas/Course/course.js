@@ -17,4 +17,21 @@ const validateCreateCourse = (body) => {
     return createCourseSchema.validate(body)
 }
 
-module.exports = { validateCreateCourse }
+const updateCourseSchema = Joi.object({
+    parentCategory: Joi.string(),
+    subCategories: Joi.array(),
+    title: Joi.string().max(255),
+    mode: Joi.string().valid('online', 'onsite'),
+    courseDuration: Joi.string(),
+    classDays: Joi.array(),
+    classDuration: Joi.string(),
+    courseFee: Joi.number().integer().min(1).max(2147483000),
+    description: Joi.string().max(1000),
+    deletedImages: Joi.array()
+})
+
+const validateUpdateCourse = (body) => {
+    return updateCourseSchema.validate(body)
+}
+
+module.exports = { validateCreateCourse, validateUpdateCourse }
