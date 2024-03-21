@@ -126,6 +126,10 @@ const userModel = sequelize.define(
       defaultValue: false,
       allowNull: true
     },
+    isBlocked: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     role: {
       type: DataTypes.ENUM('user', 'admin'),
       defaultValue: 'user'

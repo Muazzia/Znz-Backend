@@ -27,6 +27,7 @@ require('./utils/cronjob/cronjob')
 
 // routes import
 const authR = require("./routes/Auth/auth");
+const adminR = require('./routes/Admin/admin')
 const userR = require("./routes/User/userRoutes");
 const storyR = require('./routes/Story/story')
 const postR = require("./routes/Post/postRoutes");
@@ -36,12 +37,13 @@ const tokenR = require('./routes/Token/token')
 const coursesR = require('./routes/Course/course')
 const followerR = require('./routes/Follower/follower')
 
-const { checkJWT } = require("./middleware/authenticationMiddleware");
+const { checkJWT, adminCheckJWT } = require("./middleware/authenticationMiddleware");
 const checkExistingToken = require("./middleware/previousToken");
 
 //  middlewares
 app.use('/api/validatetoken', checkExistingToken, checkJWT, tokenR)
 app.use("/api/auth/user", authR);
+app.use('/api/admin', adminCheckJWT, adminR)
 app.use("/api/user", userR);
 
 app.use("/api/user/story", checkExistingToken, checkJWT, storyR);

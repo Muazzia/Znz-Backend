@@ -52,4 +52,4 @@ const validateLogin = (body) => {
     return loginSchema.validate(body)
 }
 
-module.exports = { validateRegister, validateLogin }
+module.exports = { validateRegister, validateLogin, allowedDomains }

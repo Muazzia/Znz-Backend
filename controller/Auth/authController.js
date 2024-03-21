@@ -237,7 +237,9 @@ const loginUser = async (req, res) => {
       });
     }
 
-    if (!userToFind.isEmailVerified) return res.status(401).send({ message: "Unothorized: Email not Verified" })
+    if (!userToFind.isEmailVerified) return res.status(401).send(responseObject("Unothorized: Email not Verified", 401, "", "Unothorized: Email not Verified"))
+    if (!userToFind.isBlock) return res.status(401).send(responseObject("User is Blocked", 401, "", "User is Blocked Can't Access"))
+
 
     if (userToFind.googleUser) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
     // comparing the hashed password with the user's password in the req.body

@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const { responseObject } = require("../utils/responseObject");
+const userModel = require("../models/userModel");
 
 function checkJWT(req, res, next) {
   try {
@@ -10,7 +12,7 @@ function checkJWT(req, res, next) {
 
     const accessToken = authHeader.split(" ")[1];
 
-    jwt.verify(accessToken, process.env.Secret_KEY, (err, decoded) => {
+    jwt.verify(accessToken, process.env.Secret_KEY, async (err, decoded) => {
       if (err) {
         console.error("JWT verification failed:", err.message);
         return res.status(401).json({ error: "Unauthorized: Invalid token" });
@@ -20,7 +22,13 @@ function checkJWT(req, res, next) {
         req.isPassReset = decoded.isPassReset ? true : false
         req.userEmail = decoded.email;
 
-        if (!req.isPassReset && !decoded.isEmailVerified) return res.status(401).json({ error: "Unauthorized: Email Not Verified" })
+        const user = await userModel.findByPk(req.userEmail);
+        if (!user) return res.status(404).send(responseObject("User dosn't Exist", 404, "", "User not Found"))
+
+
+        if (!req.isPassReset && !user.isEmailVerified) return res.status(401).json({ error: "Unauthorized: Email Not Verified" })
+
+        if (user.isBlocked) return res.status(401).send(responseObject("Blocked Can't Access", 401, "", "User is Blocked"))
         next();
       }
     });
@@ -40,7 +48,6 @@ function adminCheckJWT(req, res, next) {
     console.log(accessToken);
 
     const userInfo = jwt.decode(accessToken);
-    console.log(userInfo);
 
     if (userInfo.role === "admin") {
       jwt.verify(accessToken, process.env.Secret_KEY, (err, decoded) => {

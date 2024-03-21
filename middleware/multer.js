@@ -71,7 +71,7 @@ const handleFileUpload = (req, res, next) => {
 
 const handleCourseUpload = (req, res, next) => {
   const uploadCourse = uploadMultiple.array('images', 10);
-
+  console.log(req);
   uploadCourse(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error

@@ -37,3 +37,9 @@
 - [Delete Comment](http://localhost:8080/api/user/post/comment/:postId)
 - [Update Commnet](http://localhost:8080/api/user/post/comment/:postId)
 - [Like Comment](http://localhost:8080/api/user/post/like)
+
+# Admin Routes
+
+- [Gell All Users](http://localhost:8080/api/admin/user)
+
+-[Update User Blocked Status](http://localhost:8080/api/admin/user)
