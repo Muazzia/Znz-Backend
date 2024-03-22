@@ -14,13 +14,15 @@ const userDetailsModel = require("../../models/userAdditionalInformation");
 const getUserData = async (req, res) => {
   try {
     const email = req.params.email;
-    const user = await userModel.findByPk(email);
+    const user = await userModel.findByPk(email, {
+      attributes: {
+        exclude: ['password']
+      }
+    });
 
     if (!user) return res.status(404).send('Not Found');
 
-    const data = { ...user.dataValues }
-    delete data.password
-    return res.send({ message: "Data Received Successfully", status: "200", data })
+    return res.send({ message: "Data Received Successfully", status: "200", user })
 
 
   } catch (error) {
