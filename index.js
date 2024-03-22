@@ -53,7 +53,7 @@ app.use("/api/user/post/like", checkExistingToken, checkJWT, likeR);
 app.use('/api/user/post/comment', checkExistingToken, checkJWT, postCommentR)
 app.use('/api/user/connection', checkExistingToken, checkJWT, followerR)
 
-app.use('/api/courses', checkExistingToken, checkJWT, coursesR)
+app.use('/api/course', checkExistingToken, checkJWT, coursesR)
 
 
 
