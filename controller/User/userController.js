@@ -3,11 +3,10 @@ const bcrypt = require("bcrypt");
 
 const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
-const { newEmailQueue, transporter } = require("../../utils/nodeMailer/mailer");
+const { transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate } = require("../../joiSchemas/User/userSchema");
-const { cloudinary, uploadToCloudinary } = require("../../utils/cloudinary/cloudinary");
-const { bufferToString } = require("../../middleware/multer");
+const { uploadToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 
 // new
