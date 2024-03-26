@@ -3,6 +3,7 @@ const courseModel = require('../../models/courseModel');
 const userModel = require('../../models/userModel');
 const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary');
 const { responseObject } = require('../../utils/responseObject');
+const { sortData } = require('../../utils/sortdata');
 
 
 const userAtrributesObject = {
@@ -12,7 +13,8 @@ const userAtrributesObject = {
 const getAllCourses = async (req, res) => {
     try {
         const course = await courseModel.findAll(userAtrributesObject);
-        return res.send(responseObject('Successfull', 200, course))
+        const data = sortData(course)
+        return res.send(responseObject('Successfull', 200, data))
 
     } catch (error) {
         console.log(error);
@@ -23,12 +25,13 @@ const getAllCourses = async (req, res) => {
 const getMyCourses = async (req, res) => {
     try {
         const userEmail = req.userEmail;
-        const data = await courseModel.findAll({
+        const course = await courseModel.findAll({
             where: {
                 authorEmail: userEmail
             },
             ...userAtrributesObject
         });
+        const data = sortData(course)
 
         return res.status(200).send(responseObject("Successfully Reterived Data", 200, data))
 
