@@ -1,12 +1,14 @@
 const express = require('express')
-const { getAllUser, updateUser } = require('../../controller/Admin/admin')
+const { getAllUser, updateUser, getAllCourses } = require('../../controller/Admin/admin')
 const adminRouter = express.Router()
 
-// get
-adminRouter.get("/user", getAllUser)
 
-// update Blocked UnBlocked Status
+// User routes
+adminRouter.get("/user", getAllUser)
 adminRouter.put('/user', updateUser)
+
+// Course Routes
+adminRouter.get('/course', getAllCourses)
 
 
 

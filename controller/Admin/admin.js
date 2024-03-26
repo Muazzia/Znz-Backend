@@ -1,4 +1,5 @@
 const { validateAdminUpdateUser } = require("../../joiSchemas/Admin/admin")
+const courseModel = require("../../models/courseModel")
 const userModel = require("../../models/userModel")
 const { responseObject } = require("../../utils/responseObject")
 
@@ -33,4 +34,16 @@ const updateUser = async (req, res) => {
     }
 }
 
-module.exports = { getAllUser, updateUser }
+const getAllCourses = async (req, res) => {
+    try {
+        const data = await courseModel.findAll({
+            include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName'] }]
+        })
+
+        return res.status(200).send(responseObject("Successfully Retrieved", 200, data))
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+module.exports = { getAllUser, updateUser, getAllCourses }
