@@ -20,6 +20,24 @@ const getAllCourses = async (req, res) => {
     }
 }
 
+const getMyCourses = async (req, res) => {
+    try {
+        const userEmail = req.userEmail;
+        const data = await courseModel.findAll({
+            where: {
+                authorEmail: userEmail
+            },
+            ...userAtrributesObject
+        });
+
+        return res.status(200).send(responseObject("Successfully Reterived Data", 200, data))
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
 const getASpecificCourse = async (req, res) => {
     try {
         const id = req.params.id;
@@ -159,4 +177,4 @@ const updateCourse = async (req, res) => {
     }
 }
 
-module.exports = { getAllCourses, getASpecificCourse, deleteASpecificCourse, createCourse, updateCourse }
+module.exports = { getAllCourses, getASpecificCourse, getMyCourses, deleteASpecificCourse, createCourse, updateCourse }
