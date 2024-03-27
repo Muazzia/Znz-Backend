@@ -36,9 +36,22 @@ const updateUser = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
     try {
-        const data = await courseModel.findAll({
+        const optionObject = {
             include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName'] }]
-        })
+        }
+        const userEmail = req.query.userEmail
+        let data;
+        if (userEmail) {
+            data = await courseModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                },
+                ...optionObject
+            })
+        } else {
+
+            data = await courseModel.findAll(optionObject)
+        }
 
         return res.status(200).send(responseObject("Successfully Retrieved", 200, data))
     } catch (error) {
@@ -46,4 +59,23 @@ const getAllCourses = async (req, res) => {
     }
 }
 
-module.exports = { getAllUser, updateUser, getAllCourses }
+const deleteCourse = async (req, res) => {
+    try {
+        const id = req.params.id;
+        // const course = await courseModel.findByPk(id, {
+        //     include: [{ model: userModel, attributes: ['email', "firstName", "lastName", "profilePic"] }],
+        // })
+        const course = await courseModel.findByPk(id, {
+            include: [{ model: userModel, attributes: ["email", "firstName", "lastName", "profilePic"] }]
+        })
+        if (!course) return res.status(404).send(responseObject("Course Not Found", 404, "", "Course Id is not valid"))
+
+        await course.destroy()
+        return res.status(200).send(responseObject("Successfully Deleted Data", 200, course))
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+module.exports = { getAllUser, updateUser, getAllCourses, deleteCourse }

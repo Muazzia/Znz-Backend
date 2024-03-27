@@ -1,5 +1,5 @@
 const express = require('express')
-const { getAllUser, updateUser, getAllCourses } = require('../../controller/Admin/admin')
+const { getAllUser, updateUser, getAllCourses, deleteCourse } = require('../../controller/Admin/admin')
 const adminRouter = express.Router()
 
 
@@ -9,7 +9,7 @@ adminRouter.put('/user', updateUser)
 
 // Course Routes
 adminRouter.get('/course', getAllCourses)
-
+adminRouter.delete('/course/:id', deleteCourse)
 
 
 adminRouter.delete('/post/:postId')
