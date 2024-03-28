@@ -7,7 +7,7 @@ const { sortData } = require('../../utils/sortdata');
 
 
 const userAtrributesObject = {
-    include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName'] }]
+    include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] }]
 }
 
 const getAllCourses = async (req, res) => {
