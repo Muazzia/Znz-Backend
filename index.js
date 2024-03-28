@@ -36,6 +36,7 @@ const postCommentR = require('./routes/PostComment/postComment')
 const tokenR = require('./routes/Token/token')
 const coursesR = require('./routes/Course/course')
 const followerR = require('./routes/Follower/follower')
+const productR = require('./routes/Product/product')
 
 const { checkJWT, adminCheckJWT } = require("./middleware/authenticationMiddleware");
 const checkExistingToken = require("./middleware/previousToken");
@@ -54,7 +55,7 @@ app.use('/api/user/post/comment', checkExistingToken, checkJWT, postCommentR)
 app.use('/api/user/connection', checkExistingToken, checkJWT, followerR)
 
 app.use('/api/course', checkExistingToken, checkJWT, coursesR)
-
+app.use('/api/product', checkExistingToken, checkJWT, productR)
 
 
 // server
