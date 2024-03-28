@@ -71,7 +71,7 @@ const deleteCourse = async (req, res) => {
         if (!course) return res.status(404).send(responseObject("Course Not Found", 404, "", "Course Id is not valid"))
 
         await course.destroy()
-        return res.status(200).send(responseObject("Successfully Deleted Data", 200, course))
+        return res.status(200).send(responseObject("Successfully Deleted Course", 200, course))
     } catch (error) {
         console.log(error);
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
