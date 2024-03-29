@@ -32,6 +32,15 @@ const productModel = sequelize.define('products', {
             this.setDataValue("images", value ? JSON.stringify(value) : null);
         },
     },
+    parentCategory: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    subCategories: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: []
+    },
     authorEmail: {
         type: DataTypes.STRING,
         allowNull: false,

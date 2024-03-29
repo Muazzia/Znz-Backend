@@ -4,13 +4,35 @@ const userModel = require('../../models/userModel')
 const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary')
 const { responseObject } = require('../../utils/responseObject')
 
+const userAtrributesObject = {
+    include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName'] }]
+}
+
 const getAllProducts = async (req, res) => {
     try {
         const data = await productModel.findAll({
-            include: [{ model: userModel, attributes: ["email", "firstName", "lastName", "profilePic"] }]
+            ...userAtrributesObject
         })
 
         return res.status(200).send(responseObject("Succesfully Retreived Data", 200, data))
+
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+const getAProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const product = await productModel.findByPk(id, {
+            ...userAtrributesObject
+        })
+
+        if (!product) return res.status(404).send(responseObject("Not Found", 404, "", "ID is Not Valid"))
+
+        return res.status(200).send(responseObject("Successfully Retrieved Data", 200, product))
+
+
 
     } catch (error) {
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
@@ -43,13 +65,16 @@ const createProduct = async (req, res) => {
             }
         }
 
-        const product = await productModel.create({
+        let product = await productModel.create({
             ...value,
             images: imageUrls,
             authorEmail: req.userEmail
         })
 
         if (!product) return res.status(400).send(responseObject("Can't Upload At the moment", 400, "", "Product upload error try again"))
+        product = await productModel.findByPk(product.productId, {
+            ...userAtrributesObject
+        })
 
         return res.status(200).send(responseObject("Successfully Created", 200, product))
 
@@ -59,4 +84,4 @@ const createProduct = async (req, res) => {
     }
 }
 
-module.exports = { getAllProducts, createProduct }
+module.exports = { getAllProducts, createProduct, getAProduct }
