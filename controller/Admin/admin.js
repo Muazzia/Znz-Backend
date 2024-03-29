@@ -2,10 +2,30 @@ const { validateAdminUpdateUser } = require("../../joiSchemas/Admin/admin")
 const courseModel = require("../../models/courseModel")
 const userModel = require("../../models/userModel")
 const { responseObject } = require("../../utils/responseObject")
+const { Sequelize, Op } = require('sequelize');
+
 
 
 const getAllUser = async (req, res) => {
     try {
+        let userInput = req.query.filter;
+
+        if (userInput) {
+            console.log(userInput);
+            userInput = userInput.replace(/\s+/g, '');
+
+            const data = await userModel.findAll({
+                attributes: { exclude: ['password'] }, // Exclude password field
+                where: {
+                    [Op.or]: [
+                        Sequelize.literal(`CONCAT(firstName, lastName) LIKE '%${userInput}%'`), // Search in concatenated name
+                        { email: { [Op.like]: `%${userInput}%` } } // Search in email field with wildcard
+                    ]
+                }
+            });
+
+            return res.status(200).send(responseObject("Successfully Received", 200, data));
+        }
         const data = await userModel.findAll({
             attributes: {
                 exclude: ['password']
