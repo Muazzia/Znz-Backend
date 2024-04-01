@@ -9,11 +9,14 @@ cloudinary.config({
 
 
 const uploadToCloudinary = (file, folderPath) => {
+    console.log("file", file);
     const uploadOptions = {
         resource_type: "auto",
         folder: folderPath,
-        quality: 60, // Adjust the quality value as needed (default is 80)
+        quality: file.size > 2 * 1024 * 1024 ? 50 : 60, // Adjust the quality value as needed (default is 80)
     };
+
+    // if folder path given to upload on the specific folder
     if (folderPath) {
         return new Promise((resolve, reject) => {
             // Use the `upload` method from the Cloudinary SDK
@@ -33,7 +36,7 @@ const uploadToCloudinary = (file, folderPath) => {
     return new Promise((resolve, reject) => {
         // Use the `upload` method from the Cloudinary SDK
         cloudinary.uploader
-            .upload_stream({ resource_type: "auto" }, (error, result) => {
+            .upload_stream(uploadOptions, (error, result) => {
                 if (error) {
                     console.error("Error in Cloudinary upload:", error);
                     reject({ error });
