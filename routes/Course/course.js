@@ -8,7 +8,10 @@ courseRouter.get('/', getAllCourses)
 courseRouter.get('/my-courses', getMyCourses)
 courseRouter.get('/:id', getASpecificCourse)
 courseRouter.delete('/:id', deleteASpecificCourse)
+
 courseRouter.post('/', handleCourseUpload, createCourse)
+
+// this need to be change
 courseRouter.put('/:id', handleCourseUpload, updateCourse)
 
 

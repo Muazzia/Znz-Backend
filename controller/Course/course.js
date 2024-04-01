@@ -99,7 +99,7 @@ const createCourse = async (req, res) => {
         }
         if (req.files) {
             for (const file of req.files) {
-                const cloudinaryResponse = await uploadToCloudinary(file);
+                const cloudinaryResponse = await uploadToCloudinary(file, "znz/course");
                 if (cloudinaryResponse.error) {
                     return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
                 }
@@ -121,6 +121,8 @@ const createCourse = async (req, res) => {
     }
 }
 
+
+// there are things need to change modify it again
 const updateCourse = async (req, res) => {
     try {
         const { error, value } = validateUpdateCourse(req.body)
@@ -146,16 +148,16 @@ const updateCourse = async (req, res) => {
 
 
 
-        if (value.deletedImages && value.deletedImages.length !== 0)
-            if (imageUrls.length === 1) return res.status(400).send(responseObject("Can't Delete Last Image", 400, "", "Need Atleast One Image"))
-        imageUrls = imageUrls.filter(imageUrl => {
-            console.log(value.deletedImages.includes(imageUrl));
-            return !value.deletedImages.includes(imageUrl)
-        })
+        // if (value.deletedImages && value.deletedImages.length !== 0)
+        //     if (imageUrls.length === 1) return res.status(400).send(responseObject("Can't Delete Last Image", 400, "", "Need Atleast One Image"))
+        // imageUrls = imageUrls.filter(imageUrl => {
+        //     console.log(value.deletedImages.includes(imageUrl));
+        //     return !value.deletedImages.includes(imageUrl)
+        // })
 
         if (req.files) {
             for (const file of req.files) {
-                const cloudinaryResponse = await uploadToCloudinary(file);
+                const cloudinaryResponse = await uploadToCloudinary(file, "znz/course");
                 if (cloudinaryResponse.error) {
                     return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
                 }

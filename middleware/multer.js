@@ -67,15 +67,49 @@ const handleFileUpload = (req, res, next) => {
   });
 };
 
+//the array brackets should be removed it was added due to the error of frontend in course module
+const handleProductUpload = (req, res, next) => {
+  const upload = uploadMultiple.array('images[]', 10)
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer-specific error
+      console.log("Multer Error:", err);
+      return res.status(400).json({
+        statusCode: 400,
+        message: "File upload error",
+        error: err.message,
+      });
+    } else if (err) {
+      // Generic error
+      return res.status(400).json({
+        statusCode: 400,
+        error: err.message,
+      });
+    }
+
+    // Check if files are missing in the request
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Missing required parameter - images",
+      });
+    }
+
+    // console.log("Files Uploaded Successfully!");
+    next();
+  });
+};
 
 
+//the array brackets should be removed it was added due to the error of frontend in course module
 const handleCourseUpload = (req, res, next) => {
-  const uploadCourse = uploadMultiple.array('images', 10);
+  const uploadCourse = uploadMultiple.array('images[]', 10);
   console.log(req);
   uploadCourse(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
       console.log("Multer Error:", err);
+
       return res.status(400).json({
         statusCode: 400,
         message: "Image upload error",
@@ -210,4 +244,4 @@ const bufferToString = (req) => {
 }
 
 
-module.exports = { handleFileUpload, handleProfileUpload, bufferToString, handleCoverUpload, handleStoryUpload, handleCourseUpload };
+module.exports = { handleFileUpload, handleProductUpload, handleProfileUpload, bufferToString, handleCoverUpload, handleStoryUpload, handleCourseUpload };
