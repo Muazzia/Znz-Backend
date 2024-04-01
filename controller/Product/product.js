@@ -56,7 +56,7 @@ const createProduct = async (req, res) => {
 
         if (req.files) {
             for (const file of req.files) {
-                const cloudinaryResponse = await uploadToCloudinary(file);
+                const cloudinaryResponse = await uploadToCloudinary(file, "znz/product");
                 if (cloudinaryResponse.error) {
                     return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
                 }
