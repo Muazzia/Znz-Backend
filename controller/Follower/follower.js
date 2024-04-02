@@ -60,7 +60,7 @@ const getAllFollowing = async (req, res) => {
         const followers = await followerModel.findAll({
             where: {
                 userEmail: userEmail,
-                // status: 'accepted'
+                status: 'accepted'
             }
         });
 
@@ -107,6 +107,7 @@ const createAFollowRequest = async (req, res) => {
             }
         })
 
+        if (follower && follower.status === "pending") return res.status(400).send({ status: 400, message: "Request is already Sent" })
         if (follower) return res.status(400).send({ status: 400, message: 'You are already Following' })
 
         follower = await followerModel.create({ ...value, userEmail })
