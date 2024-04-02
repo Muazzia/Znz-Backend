@@ -84,4 +84,27 @@ const createProduct = async (req, res) => {
     }
 }
 
-module.exports = { getAllProducts, createProduct, getAProduct }
+const deleteProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const authorEmail = req.userEmail;
+
+        const product = await productModel.findOne({
+            where: {
+                productId,
+                authorEmail
+            },
+            ...userAtrributesObject
+        })
+
+        if (!product) return res.status(404).send(responseObject("Product not found", 404, "", "Id is not valid"))
+
+
+        await product.destroy();
+        return res.status(200).send(responseObject("Successfully Deleted", 200, product))
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+module.exports = { getAllProducts, createProduct, getAProduct, deleteProduct }
