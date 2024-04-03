@@ -1,6 +1,8 @@
 const { validateAdminUpdateUser } = require("../../joiSchemas/Admin/admin")
 const courseModel = require("../../models/courseModel")
 const userModel = require("../../models/userModel")
+const productModel = require("../../models/product")
+
 const { responseObject } = require("../../utils/responseObject")
 const { Sequelize, Op } = require('sequelize');
 
@@ -35,6 +37,25 @@ const getAllUser = async (req, res) => {
 
     } catch (error) {
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error try again"))
+    }
+}
+
+const getAllProducts = async (req, res) => {
+    try {
+        const userEmail = req.params.userEmail;
+        if (userEmail) {
+            const data = await productModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                }
+            })
+            return res.status(200).send(responseObject("Successfully Retrieved", 200, data))
+        } else {
+            return res.status(400).send(responseObject("User have not listed any product", 400))
+
+        }
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
 
@@ -98,4 +119,4 @@ const deleteCourse = async (req, res) => {
     }
 }
 
-module.exports = { getAllUser, updateUser, getAllCourses, deleteCourse }
+module.exports = { getAllUser, updateUser, getAllCourses, deleteCourse, getAllProducts }

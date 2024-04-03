@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize')
 
-const sequelize = require('../database/connection')
+const sequelize = require('../database/connection');
+const userModel = require('./userModel');
 
 const followerModel = sequelize.define('followers', {
     followerId: {
@@ -33,6 +34,10 @@ const followerModel = sequelize.define('followers', {
         defaultValue: 'pending',
     },
 })
+
+followerModel.belongsTo(userModel, { foreignKey: 'userEmail', targetKey: 'email' });
+followerModel.belongsTo(userModel, { foreignKey: 'followingEmail', targetKey: 'email' });
+
 
 
 sequelize
