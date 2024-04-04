@@ -104,7 +104,6 @@ const handleProductUpload = (req, res, next) => {
 //the array brackets should be removed it was added due to the error of frontend in course module
 const handleCourseUpload = (req, res, next) => {
   const uploadCourse = uploadMultiple.array('images[]', 10);
-  console.log(req);
   uploadCourse(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       // Multer-specific error
