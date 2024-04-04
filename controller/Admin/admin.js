@@ -40,7 +40,7 @@ const getAllUser = async (req, res) => {
     }
 }
 
-const getAllProducts = async (req, res) => {
+const getAllProductsForASpecificUser = async (req, res) => {
     try {
         const userEmail = req.params.userEmail;
         if (userEmail) {
@@ -54,6 +54,34 @@ const getAllProducts = async (req, res) => {
             return res.status(400).send(responseObject("User have not listed any product", 400))
 
         }
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+const getAllProducts = async (req, res) => {
+    try {
+        const data = await productModel.findAll({
+            include: [{ model: userModel, attributes: ["email", "firstName", "lastName"] }]
+        })
+
+        return res.status(200).send(responseObject("Successfully Retrieved Data", 200, data))
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+const deleteAProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const product = await productModel.findByPk(id, {
+            include: [{ model: userModel, attributes: ["email", "firstName", "lastName"] }]
+        })
+
+        if (!product) return res.status(404).send(responseObject("Product Not Found", 404, "", "Id is not valid"))
+
+        return res.status(200).send(responseObject("Product Deleted Successfully", 200, product))
+
     } catch (error) {
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
@@ -119,4 +147,4 @@ const deleteCourse = async (req, res) => {
     }
 }
 
-module.exports = { getAllUser, updateUser, getAllCourses, deleteCourse, getAllProducts }
+module.exports = { getAllUser, updateUser, getAllCourses, deleteCourse, getAllProducts, getAllProductsForASpecificUser, deleteAProduct }

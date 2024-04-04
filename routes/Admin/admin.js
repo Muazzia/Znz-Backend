@@ -1,5 +1,5 @@
 const express = require('express')
-const { getAllUser, updateUser, getAllCourses, deleteCourse, getAllProducts } = require('../../controller/Admin/admin')
+const { getAllUser, updateUser, getAllCourses, deleteCourse, getAllProducts, getAllProductsForASpecificUser, deleteAProduct } = require('../../controller/Admin/admin')
 const adminRouter = express.Router()
 
 
@@ -13,7 +13,10 @@ adminRouter.delete('/course/:id', deleteCourse)
 
 
 // Products Routes
-adminRouter.get('/product/:userEmail', getAllProducts)
+// adminRouter.get('/product/:userEmail', getAllProductsForASpecificUser)
+adminRouter.get('/product', getAllProducts)
+adminRouter.delete('/product/:id', deleteAProduct)
+
 
 adminRouter.delete('/post/:postId')
 adminRouter.delete('/user/:userEmail')
