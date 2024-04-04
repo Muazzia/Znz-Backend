@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize')
-const sequelize = require('.././database/connection')
+const sequelize = require('.././database/connection');
+const userModel = require('./userModel');
 
 const storiesModel = sequelize.define('stories', {
     storyId: {
@@ -27,6 +28,9 @@ const storiesModel = sequelize.define('stories', {
         defaultValue: 0
     }
 });
+
+storiesModel.belongsTo(userModel, { foreignKey: 'userEmail', targetKey: 'email' });
+
 
 
 sequelize

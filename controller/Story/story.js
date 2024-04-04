@@ -1,10 +1,11 @@
 const { bufferToString } = require('../../middleware/multer');
 const storiesModel = require('../../models/storiesModel');
-const { cloudinary } = require('../../utils/cloudinary/cloudinary');
+const { cloudinary, uploadToCloudinary } = require('../../utils/cloudinary/cloudinary');
 
 const userModel = require('../../models/userModel');
 const followerModel = require('../../models/followerModel');
 const { Op } = require('sequelize');
+const { responseObject } = require('../../utils/responseObject');
 
 const returnObjectWrapper = async (data, mail, route) => {
     const messageData = {
@@ -30,113 +31,146 @@ const returnObjectWrapper = async (data, mail, route) => {
     }
 }
 
+const includeObject = {
+    include: [{ model: userModel, attributes: ["email", "firstName", "lastName", "profilePic"] }]
+}
+
 const getAllStories = async (req, res) => {
     try {
         const userEmail = req.userEmail
-        const allStories = await storiesModel.findAll({
+        const userData = await userModel.findByPk(userEmail, {
+            attributes: {
+                exclude: ['password']
+            }
+        })
+
+        if (!userData) return res.status(404).send(responseObject("User not Found", 404, "", "User Not Found"))
+
+        const userStories = await storiesModel.findAll({
             where: {
                 userEmail,
                 createdAt: {
                     [Op.gte]: new Date(new Date() - 24 * 60 * 60 * 1000), // createdAt >= 24 hours ago
                 },
-            }
+            },
+            ...includeObject
         });
 
-
-        const allData = await followerModel.findAll({
+        const friendsData = await followerModel.findAll({
             where: {
-                userEmail
+                userEmail,
+                status: 'accepted'
             }
         })
 
-        const followingEmails = allData.map(d => {
+
+
+        const FriendsEmails = friendsData.map(d => {
             return d.dataValues.followingEmail
         })
-        const tempArr = await Promise.all(followingEmails.map(async (fe, i) => {
+        const FriendsStories = await Promise.all(FriendsEmails.map(async (email, i) => {
             try {
-                const user = await userModel.findByPk(fe)
-                if (!user) return null;
 
+                const user = await userModel.findByPk(email)
+                if (!user) return null;
                 const stories = await storiesModel.findAll({
                     where: {
-                        userEmail: fe,
+                        userEmail: email,
                         createdAt: {
-                            [Op.gte]: new Date(new Date() - 24 * 60 * 60 * 1000), // createdAt >= 24 hours ago
+                            [Op.gte]: new Date(new Date() - 24 * 60 * 60 * 1000),
                         },
-                    }
+                    },
+                    ...includeObject
                 });
 
-                if (stories.length === 0) return null;
-                const { firstName, lastName, profilePic } = user
+                if (stories.length === 0) return null
                 return {
-                    user: { firstName, lastName, profilePic },
+                    user: {
+                        email: user.email,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        profilePic: user.profilePic
+                    },
                     stories
                 }
+
             } catch (error) { }
         }))
 
-        const finalArr = tempArr.filter(t => {
+        const finalArr = FriendsStories.filter(t => {
             return t
         })
-        const newObject = await returnObjectWrapper(allStories, req.userEmail, 'get')
-        return res.send({ ...newObject, followingStoriesData: finalArr })
+
+        const data = {
+            user: {
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email,
+                profilePic: userData.profilePic
+            },
+            stories: userStories,
+            friendsStories: finalArr
+        }
+        return res.status(200).send(responseObject("Successfully Retrieved", 200, data))
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server')
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
 
 const getStory = async (req, res) => {
     try {
         const id = req.params.id;
-        const story = await storiesModel.findByPk(id);
+        const story = await storiesModel.findByPk(id, {
+            ...includeObject
+        });
 
         if (!story) return res.status(404).send('Not found')
 
         if (story.userEmail !== req.userEmail) return res.status(401).send("Unauthorized Can't Access")
 
-        const newObject = await returnObjectWrapper(story, req.userEmail, 'get')
-        return res.send(newObject)
+        return res.send(responseObject("Successfully Retreived", 200, story))
     } catch (error) {
-        res.status(500).send('Server error')
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
 
 const postStory = async (req, res) => {
     try {
-        const imgResponse = await cloudinary.uploader.upload(bufferToString(req).content, {
-            folder: "znz/stories"
-        });
+        if (!req.file) return res.status(400).send(responseObject("Please Upload Image", 400, "", "Image is Required"))
+        const imgResponse = await uploadToCloudinary(req.file, "znz/stories")
         const user = await userModel.findByPk(req.userEmail)
-        if (!user) return res.status(404).send('Not Found')
+        if (!user) return res.status(404).send(responseObject("User not Found", 404, "", "User Not Found"))
 
-        const story = await storiesModel.create({
+        let story = await storiesModel.create({
             userEmail: req.userEmail,
             storyImage: imgResponse.secure_url
         })
 
-        if (!story) return res.status(400).send('Cant upload')
+        if (!story) return res.status(400).send(responseObject("Error During Creation", 400, "", "Try Again"))
 
-
-        const newObject = await returnObjectWrapper(story, req.userEmail, 'post')
-        return res.send(newObject)
+        story = await storiesModel.findByPk(story.storyId, {
+            ...includeObject
+        });
+        return res.status(200).send(responseObject("Successfully Created Story", 200, story))
     } catch (error) {
-        return res.status(500).send('Server error')
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
 
 const deleteStory = async (req, res) => {
     try {
         const id = req.params.id
-        const story = await storiesModel.findByPk(id);
+        const story = await storiesModel.findByPk(id, {
+            ...includeObject
+        });
 
-        if (!story) return res.status(404).send('Not found')
+        if (!story) return res.status(404).send(responseObject("Story not Found", 404, "", "Story Not Found"))
 
         await story.destroy();
-        return res.send({ message: 'Deleted Successfully', story })
+        return res.send(responseObject("Deleted Successfully", 200, story))
     } catch (error) {
-        console.log(error);
-        res.status(500).send('Server Error')
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
 
