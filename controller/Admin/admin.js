@@ -80,6 +80,7 @@ const deleteAProduct = async (req, res) => {
 
         if (!product) return res.status(404).send(responseObject("Product Not Found", 404, "", "Id is not valid"))
 
+        await product.destroy()
         return res.status(200).send(responseObject("Product Deleted Successfully", 200, product))
 
     } catch (error) {
