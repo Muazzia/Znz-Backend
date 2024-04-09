@@ -1,7 +1,7 @@
 const postModel = require("../../models/postModel");
 const userModel = require('../../models/userModel.js')
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
-const { cloudinary, uploadToCloudinary, deleteFromCloudinary } = require('../../utils/cloudinary/cloudinary.js');
+const { cloudinary, uploadToCloudinary, deleteFromCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
 const postLikeModel = require("../../models/likepostModel.js");
 const commentModel = require("../../models/commentModel.js");
 
@@ -192,24 +192,16 @@ const addingPost = async (req, res) => {
     const chkUser = await userModel.findByPk(userEmail)
     if (!chkUser) return res.status(400).send('User not found')
 
-    // Process each uploaded file
-    const imageUrls = [];
-    if (req.files) {
-      for (const file of req.files) {
-        const cloudinaryResponse = await uploadToCloudinary(file, 'znz/post');
-        if (cloudinaryResponse.error) {
-          return res.status(500).json({
-            statusCode: 500,
-            message: "Internal server error during image upload",
-            error: cloudinaryResponse.error.message,
-          });
-        }
 
-        imageUrls.push(cloudinaryResponse.secure_url);
-      }
-    }
+    const imageUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
+    if (!imageUploadResponse.isSuccess) return res.status(500).json({
+      statusCode: 500,
+      message: "Internal server error",
+      error: imageUploadResponse.error,
+    });
 
-    // Create post in the database with image URLs
+    const imageUrls = imageUploadResponse.data
+
     const postAdd = await postModel.create({
       email: userEmail,
       postText,
