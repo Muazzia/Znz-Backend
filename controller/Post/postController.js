@@ -4,6 +4,7 @@ const validateAddPost = require("../../joiSchemas/Post/postSchema");
 const { uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
 const postLikeModel = require("../../models/likepostModel.js");
 const commentModel = require("../../models/commentModel.js");
+const { responseObject } = require("../../utils/responseObject/index.js");
 
 
 const modifyData = async (allPosts, isMyPosts) => {
@@ -194,11 +195,7 @@ const addingPost = async (req, res) => {
 
 
     const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
-    if (!imagesUploadResponse.isSuccess) return res.status(500).json({
-      statusCode: 500,
-      message: "Internal server error",
-      error: imagesUploadResponse.error,
-    });
+    if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
 
     const imageUrls = imagesUploadResponse.data
 

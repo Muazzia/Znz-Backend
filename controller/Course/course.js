@@ -1,7 +1,7 @@
 const { validateCreateCourse, validateUpdateCourse } = require('../../joiSchemas/Course/course');
 const courseModel = require('../../models/courseModel');
 const userModel = require('../../models/userModel');
-const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary');
+const { uploadToCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary');
 const { responseObject } = require('../../utils/responseObject');
 const { sortData } = require('../../utils/sortdata');
 
@@ -89,7 +89,6 @@ const createCourse = async (req, res) => {
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
 
-        const imageUrls = [];
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
@@ -97,16 +96,12 @@ const createCourse = async (req, res) => {
                 message: "Missing required parameter - images",
             });
         }
-        if (req.files) {
-            for (const file of req.files) {
-                const cloudinaryResponse = await uploadToCloudinary(file, "znz/course");
-                if (cloudinaryResponse.error) {
-                    return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
-                }
 
-                imageUrls.push(cloudinaryResponse.secure_url);
-            }
-        }
+        const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "course")
+        if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
+
+        const imageUrls = imagesUploadResponse.data;
+
 
         let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
 
