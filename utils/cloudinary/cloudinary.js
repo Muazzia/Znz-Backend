@@ -9,7 +9,6 @@ cloudinary.config({
 
 
 const uploadToCloudinary = (file, folderPath) => {
-    console.log("file", file);
     const uploadOptions = {
         resource_type: "auto",
         folder: folderPath,
