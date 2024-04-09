@@ -9,14 +9,19 @@ const { validateForgotPass, validateSetPass, validateAdditionalUserData, validat
 const { uploadToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 
+
+const passwordExludeObj = {
+  attributes: {
+    exclude: ['password']
+  }
+}
+
 // new
 const getUserData = async (req, res) => {
   try {
     const email = req.params.email;
     const user = await userModel.findByPk(email, {
-      attributes: {
-        exclude: ['password']
-      }
+      ...passwordExludeObj
     });
 
     if (!user) return res.status(404).send('Not Found');
@@ -104,7 +109,11 @@ const setPassword = async (req, res) => {
 
   // const email = req.params.email;
   const email = req.userEmail
-  const userPassword = await userModel.findOne({ where: { email: email } });
+  const userPassword = await userModel.findOne({
+    where: { email: email }, attributes: {
+      exclude: ['password']
+    }
+  });
   if (!userPassword) {
     return res.status(400).json({ statusCode: 400, message: "user not found" });
   }
@@ -213,7 +222,9 @@ const additionalUserDetails = async (req, res) => {
 
 const addProfilePic = async (req, res) => {
   try {
-    const user = await userModel.findByPk(req.userEmail)
+    const user = await userModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    })
     if (!user) return res.status(400).send('user not found')
 
 
@@ -243,7 +254,9 @@ const addProfilePic = async (req, res) => {
 
 const addCoverPic = async (req, res) => {
   try {
-    const user = await userModel.findByPk(req.userEmail)
+    const user = await userModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    })
     if (!user) return res.status(400).send('user not found')
 
     const cloudinaryResponse = await uploadToCloudinary(req.file, 'znz/user');
@@ -269,7 +282,9 @@ const addCoverPic = async (req, res) => {
 
 const getUserExtraDetails = async (req, res) => {
   try {
-    const userDetails = await userDetailsModel.findByPk(req.userEmail)
+    const userDetails = await userDetailsModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    })
     if (!userDetails) return res.send({})
     return res.send({ message: "User Extra Details", userDetails })
   } catch (error) {
@@ -284,7 +299,9 @@ const changePassword = async (req, res) => {
     const { oldPassword, newPassword, confirmPassword } = value
     if (newPassword !== confirmPassword) return res.status(400).send('passwords doesnt match')
 
-    const user = await userModel.findByPk(req.userEmail)
+    const user = await userModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    })
     if (!user) return res.status(404).send("User not found")
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
@@ -310,7 +327,9 @@ const addUserDetails = async (req, res) => {
     const { error, value } = validateUserData(req.body)
     if (error) return res.status(400).send(error.message)
 
-    const user = await userModel.findByPk(req.userEmail);
+    const user = await userModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    });
 
     if (!user) return res.status(404).send('Not found User')
 
@@ -331,7 +350,9 @@ const updateUserPersonalInfo = async (req, res) => {
 
     const userEmail = req.userEmail
 
-    const user = await userModel.findByPk(userEmail)
+    const user = await userModel.findByPk(userEmail, {
+      ...passwordExludeObj
+    })
     if (!user) return res.status(404).send('User Not Found')
 
     await user.update({
