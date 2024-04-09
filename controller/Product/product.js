@@ -1,7 +1,7 @@
 const { validateProduct } = require('../../joiSchemas/Product/product')
 const productModel = require('../../models/product')
 const userModel = require('../../models/userModel')
-const { uploadToCloudinary } = require('../../utils/cloudinary/cloudinary')
+const { uploadToCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary')
 const { responseObject } = require('../../utils/responseObject')
 
 const userAtrributesObject = {
@@ -45,7 +45,6 @@ const createProduct = async (req, res) => {
         console.log(req.body);
         if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
 
-        const imageUrls = [];
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
@@ -54,16 +53,14 @@ const createProduct = async (req, res) => {
             });
         }
 
-        if (req.files) {
-            for (const file of req.files) {
-                const cloudinaryResponse = await uploadToCloudinary(file, "znz/product");
-                if (cloudinaryResponse.error) {
-                    return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
-                }
+        const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "product")
+        if (!imagesUploadResponse.isSuccess) return res.status(500).json({
+            statusCode: 500,
+            message: "Internal server error",
+            error: imagesUploadResponse.error,
+        });
 
-                imageUrls.push(cloudinaryResponse.secure_url);
-            }
-        }
+        const imageUrls = imagesUploadResponse.data
 
         let product = await productModel.create({
             ...value,

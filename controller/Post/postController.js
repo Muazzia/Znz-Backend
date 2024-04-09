@@ -1,7 +1,7 @@
 const postModel = require("../../models/postModel");
 const userModel = require('../../models/userModel.js')
 const validateAddPost = require("../../joiSchemas/Post/postSchema");
-const { cloudinary, uploadToCloudinary, deleteFromCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
+const { uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary.js');
 const postLikeModel = require("../../models/likepostModel.js");
 const commentModel = require("../../models/commentModel.js");
 
@@ -193,14 +193,14 @@ const addingPost = async (req, res) => {
     if (!chkUser) return res.status(400).send('User not found')
 
 
-    const imageUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
-    if (!imageUploadResponse.isSuccess) return res.status(500).json({
+    const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
+    if (!imagesUploadResponse.isSuccess) return res.status(500).json({
       statusCode: 500,
       message: "Internal server error",
-      error: imageUploadResponse.error,
+      error: imagesUploadResponse.error,
     });
 
-    const imageUrls = imageUploadResponse.data
+    const imageUrls = imagesUploadResponse.data
 
     const postAdd = await postModel.create({
       email: userEmail,
