@@ -4,7 +4,7 @@ const userRoutes = express.Router();
 const { forgotPassword, setPassword, userDashboard, logout, additionalUserDetails, addProfilePic, getUserExtraDetails, changePassword, addCoverPic, addUserDetails, updateUserPersonalInfo, getUserData } = require("../../controller/User/userController")
 const { checkJWT } = require("../../middleware/authenticationMiddleware");
 const checkPreviousToken = require("../../middleware/previousToken");
-const { handleProfileUpload, handleCoverUpload } = require("../../middleware/multer");
+const { handleMulterUpload } = require("../../middleware/multer");
 
 userRoutes.route("/get-user/:email").get(checkPreviousToken, checkJWT, getUserData)
 
@@ -22,8 +22,8 @@ userRoutes.route('/user-details').patch(checkPreviousToken, checkJWT, addUserDet
 userRoutes.route('/user-personal').put(checkPreviousToken, checkJWT, updateUserPersonalInfo)
 
 
-userRoutes.route('/profilepic').patch(checkPreviousToken, checkJWT, handleProfileUpload, addProfilePic)
-userRoutes.route('/coverPic').patch(checkPreviousToken, checkJWT, handleCoverUpload, addCoverPic)
+userRoutes.route('/profilepic').patch(checkPreviousToken, checkJWT, handleMulterUpload("profilePic", true), addProfilePic)
+userRoutes.route('/coverPic').patch(checkPreviousToken, checkJWT, handleMulterUpload("coverPic", true), addCoverPic)
 
 
 module.exports = userRoutes
