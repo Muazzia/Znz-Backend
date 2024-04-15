@@ -46,7 +46,7 @@ const getAllStories = async (req, res) => {
 
         if (!userData) return res.status(404).send(responseObject("User not Found", 404, "", "User Not Found"))
 
-        const userStories = await storiesModel.findAll({
+        let userStories = await storiesModel.findAll({
             where: {
                 userEmail,
                 createdAt: {
@@ -55,13 +55,15 @@ const getAllStories = async (req, res) => {
             },
             ...includeObject
         });
+        userStories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-        const friendsData = await followerModel.findAll({
+        let friendsData = await followerModel.findAll({
             where: {
                 userEmail,
                 status: 'accepted'
             }
         })
+        friendsData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
 
 
