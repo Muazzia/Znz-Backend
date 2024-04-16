@@ -22,11 +22,6 @@ const storiesModel = sequelize.define('stories', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    noOfViews: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 0
-    }
 });
 
 storiesModel.belongsTo(userModel, { foreignKey: 'userEmail', targetKey: 'email' });
