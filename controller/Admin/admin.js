@@ -96,6 +96,8 @@ const updateUser = async (req, res) => {
         const user = await userModel.findByPk(value.userEmail)
         if (!user) return res.status(404).send(responseObject("User not Found", 404, "", "User not Found"))
 
+        if (user.email === req.userEmail) return res.status(400).send(responseObject("You can't block yourself", 400, "", "The option to block yourself is not available."))
+
         await user.update({ isBlocked: value.isBlocked })
 
         return res.status(200).send(responseObject('Updated Successfully', 200, user))

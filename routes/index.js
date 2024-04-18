@@ -20,7 +20,6 @@ const productR = require('../routes/Product/product')
 
 
 
-
 router.use('/validatetoken', checkExistingToken, checkJWT, tokenR)
 router.use("/auth/user", authR);
 router.use('/admin', adminCheckJWT, adminR)
