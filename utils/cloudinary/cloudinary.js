@@ -8,6 +8,74 @@ cloudinary.config({
 });
 
 
+// needs changes and have to be applied 
+const uploadSingleToCloudinary = async (file, folderName) => {
+    try {
+        const uploadOptions = {
+            resource_type: "auto",
+            folder: `znz/${folderName}`,
+            quality: file.size > 2 * 1024 * 1024 ? 50 : 60, // Adjust the quality value as needed (default is 80)
+        };
+
+        const res = await new Promise((resolve, reject) => {
+            // Use the `upload` method from the Cloudinary SDK
+            cloudinary.uploader
+                .upload_stream(uploadOptions, (error, result) => {
+                    if (error) {
+                        console.error("Error in Cloudinary upload:", error);
+                        reject({ isSuccess: false, error });
+                    } else {
+                        console.log("Cloudinary Response:", result);
+                        resolve({ isSuccess: true, data: result.secure_url });
+                    }
+                })
+                .end(file.buffer);
+        });
+
+        return { isSuccess: true, data: res.data }
+    } catch (error) {
+        return { isSuccess: false, error }
+    }
+}
+
+const uploadMultipleToCloudinary = async (files, folderName) => {
+    try {
+        const imageUrls = [];
+        for (const file of files) {
+            const uploadOptions = {
+                resource_type: "auto",
+                folder: `znz/${folderName}`,
+                quality: file.size > 2 * 1024 * 1024 ? 50 : 60, // Adjust the quality value as needed (default is 80)
+            };
+
+
+            const cloudinaryResponse = await new Promise((resolve, reject) => {
+                cloudinary.uploader
+                    .upload_stream(uploadOptions, (error, result) => {
+                        if (error) {
+                            console.error("Error in Cloudinary upload:", error);
+                            reject({ error });
+                        } else {
+                            console.log("Cloudinary Response:", result);
+                            resolve({ secure_url: result.secure_url });
+                        }
+                    })
+                    .end(file.buffer);
+            });
+
+            if (cloudinaryResponse.error) {
+                return { isSuccess: false, error: cloudinaryResponse.error }
+            }
+
+            imageUrls.push(cloudinaryResponse.secure_url);
+        }
+        return { isSuccess: true, data: imageUrls }
+    } catch (error) {
+        return { isSuccess: false, error }
+    }
+}
+
+
 const uploadToCloudinary = (file, folderPath) => {
     const uploadOptions = {
         resource_type: "auto",
@@ -68,4 +136,4 @@ const deleteFromCloudinary = async (url) => {
     }
 };
 
-module.exports = { cloudinary, uploadToCloudinary, deleteFromCloudinary }
+module.exports = { uploadToCloudinary, deleteFromCloudinary, uploadMultipleToCloudinary, uploadSingleToCloudinary }

@@ -6,7 +6,7 @@ const tokenModel = require("../../models/blacklistModel");
 const { transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate } = require("../../joiSchemas/User/userSchema");
-const { uploadToCloudinary } = require("../../utils/cloudinary/cloudinary");
+const { uploadSingleToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 
 
@@ -228,17 +228,18 @@ const addProfilePic = async (req, res) => {
     if (!user) return res.status(400).send('user not found')
 
 
-    const cloudinaryResponse = await uploadToCloudinary(req.file, 'znz/user');
-    if (cloudinaryResponse.error) {
+    const cloudinaryResponse = await uploadSingleToCloudinary(req.file, 'user')
+
+    if (!cloudinaryResponse.isSuccess) {
       return res.status(500).json({
         statusCode: 500,
         message: "Internal server error during image upload",
-        error: cloudinaryResponse.error.message,
+        error: cloudinaryResponse.error,
       });
     }
 
     await user.update({
-      profilePic: cloudinaryResponse.secure_url
+      profilePic: cloudinaryResponse.data
     })
 
     return res.status(201).send({ message: "Profule Pic Updated Successfully", user })
@@ -259,7 +260,7 @@ const addCoverPic = async (req, res) => {
     })
     if (!user) return res.status(400).send('user not found')
 
-    const cloudinaryResponse = await uploadToCloudinary(req.file, 'znz/user');
+    const cloudinaryResponse = await uploadSingleToCloudinary(req.file, 'user');
     if (cloudinaryResponse.error) {
       return res.status(500).json({
         statusCode: 500,
