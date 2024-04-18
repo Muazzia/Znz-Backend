@@ -76,7 +76,6 @@ const courseModel = sequelize.define("courses", {
     // },
 })
 
-courseModel.belongsTo(userModel, { foreignKey: 'authorEmail', targetKey: 'email' });
 
 sequelize
     .sync()

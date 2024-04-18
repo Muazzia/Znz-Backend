@@ -51,7 +51,6 @@ const productModel = sequelize.define('products', {
     }
 })
 
-productModel.belongsTo(userModel, { foreignKey: 'authorEmail', targetKey: 'email' });
 
 
 module.exports = productModel

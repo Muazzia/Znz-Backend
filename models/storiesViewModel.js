@@ -1,15 +1,7 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('.././database/connection');
-const userModel = require('./userModel');
-const StoryModel = require("./storiesModel")
 
 const storyViewModel = sequelize.define('storyView', {
-    // viewId: {
-    //     type: DataTypes.UUID,
-    //     allowNull: false,
-    //     defaultValue: DataTypes.UUIDV4,
-    //     primaryKey: true
-    // },
     storyId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -22,7 +14,6 @@ const storyViewModel = sequelize.define('storyView', {
     },
 });
 
-// storiesModel.belongsTo(userModel, { foreignKey: 'userEmail', targetKey: 'email' });
 
 
 
