@@ -15,8 +15,6 @@ const storyViewModel = sequelize.define('storyView', {
 });
 
 
-
-
 sequelize
     .sync()
     .then(() => {
