@@ -3,8 +3,8 @@ const DB = process.env.databaseName
 const { Sequelize, DataTypes } = require("sequelize");
 
 // database name znz, username root , password null (empty), host localhost
-const sequelize = new Sequelize(DB, "root", process.env.DATABASE_PASSWORD, {
-  host: "localhost",
+const sequelize = new Sequelize(DB, process.env.databaseUserName, process.env.databasePassword, {
+  host: process.env.databaseHost,
   dialect: "mysql",
   logging: false
 });
