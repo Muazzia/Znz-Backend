@@ -32,6 +32,10 @@ const productModel = sequelize.define('products', {
             this.setDataValue("images", value ? JSON.stringify(value) : null);
         },
     },
+    thumbnail: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     parentCategory: {
         type: DataTypes.STRING,
         allowNull: false

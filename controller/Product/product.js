@@ -21,6 +21,27 @@ const getAllProducts = async (req, res) => {
     }
 }
 
+const getMyProducts = async (req, res) => {
+    try {
+        const userEmail = req.userEmail;
+        const product = await productModel.findAll({
+            where: {
+                authorEmail: userEmail
+            },
+            ...userAtrributesObject
+        });
+        const sortedData = product.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+
+        return res.status(200).send(responseObject("Successfully Reterived Data", 200, sortedData))
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
+
 const getAProduct = async (req, res) => {
     try {
         const id = req.params.id;
@@ -65,6 +86,7 @@ const createProduct = async (req, res) => {
         let product = await productModel.create({
             ...value,
             images: imageUrls,
+            thumbnail: imageUrls[0],
             authorEmail: req.userEmail
         })
 
@@ -104,4 +126,4 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-module.exports = { getAllProducts, createProduct, getAProduct, deleteProduct }
+module.exports = { getAllProducts, createProduct, getAProduct, deleteProduct, getMyProducts }

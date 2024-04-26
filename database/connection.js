@@ -5,7 +5,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 // database name znz, username root , password null (empty), host localhost
 const sequelize = new Sequelize(DB, process.env.databaseUserName, process.env.databasePassword, {
   host: process.env.databaseHost,
-  dialect: process.env.databaseDialect,
+  dialect: process.env.databaseDialect || 'mssql',
   logging: false
 });
 // dialect: "mysql",
