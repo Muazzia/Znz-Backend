@@ -161,6 +161,17 @@ const myPost = async (req, res) => {
   }
 };
 
+const singlePost = async (req, res) => {
+  try {
+    const id = req.params.id
+    const post = await postModel.findByPk(id)
+    if (!post) return res.status(404).send(responseObject("Post not found", 404, "", "Id is not valid"))
+    return res.status(200).send(responseObject("Post found", 200, post, ""))
+  } catch (error) {
+    return res.status(500).send(responseObject("Server error", 500, "", "Interval server error"))
+  }
+}
+
 const userPost = async (req, res) => {
   try {
     const userEmail = req.params.email
@@ -283,5 +294,5 @@ const delPost = async (req, res) => {
   }
 }
 
-module.exports = { addingPost, myPost, allPosts, delPost, userPost };
+module.exports = { addingPost, myPost, allPosts, delPost, userPost, singlePost };
 

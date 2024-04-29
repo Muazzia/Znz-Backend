@@ -1,6 +1,6 @@
 const express = require("express");
 const postRouter = express.Router();
-const { addingPost, myPost, allPosts, delPost, userPost } = require("../../controller/Post/postController");
+const { addingPost, myPost, allPosts, delPost, userPost, singlePost } = require("../../controller/Post/postController");
 const { handleMulterUpload } = require("../../middleware/multer")
 const checkExistingToken = require("../../middleware/previousToken");
 const { checkJWT } = require("../../middleware/authenticationMiddleware");
@@ -12,6 +12,7 @@ postRouter.route('/del-post/:id').delete(checkExistingToken, checkJWT, delPost)
 
 
 postRouter.get("/", allPosts)
+postRouter.get('/:id', singlePost)
 postRouter.get("/my-posts", myPost);
 postRouter.get('/user-posts/:email', userPost)
 
