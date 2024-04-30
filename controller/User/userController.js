@@ -297,12 +297,11 @@ const changePassword = async (req, res) => {
   try {
     const { error, value } = validateChangePassword(req.body)
     if (error) return res.status(400).send(error.message)
+
     const { oldPassword, newPassword, confirmPassword } = value
     if (newPassword !== confirmPassword) return res.status(400).send('passwords doesnt match')
 
-    const user = await userModel.findByPk(req.userEmail, {
-      ...passwordExludeObj
-    })
+    const user = await userModel.findByPk(req.userEmail)
     if (!user) return res.status(404).send("User not found")
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
@@ -319,6 +318,7 @@ const changePassword = async (req, res) => {
     return res.status(200).json({ message: 'Password changed successfully', user });
   }
   catch (error) {
+    console.log(error);
     return res.status(500).send('Server error')
   }
 }
