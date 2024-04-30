@@ -11,6 +11,7 @@ postRouter.route('/all-posts').get(checkExistingToken, checkJWT, allPosts)
 postRouter.route('/del-post/:id').delete(checkExistingToken, checkJWT, delPost)
 
 
+
 postRouter.get("/", allPosts)
 postRouter.get('/:id', singlePost)
 postRouter.get("/my-posts", myPost);

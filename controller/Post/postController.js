@@ -7,57 +7,70 @@ const commentModel = require("../../models/commentModel.js");
 const { responseObject } = require("../../utils/responseObject/index.js");
 
 
+const getLikesData = async (postId) => {
+  const likes = await postLikeModel.findAll({
+    where: {
+      postId
+    }
+  })
+
+
+  // group likes together on the basis of users
+  const likesModified = await Promise.all(likes.map(async l => {
+    try {
+      const user = await userModel.findByPk(l.dataValues.userEmail)
+      const { firstName, lastName, profilePic, email } = user
+      return {
+        user: { firstName, lastName, profilePic, email },
+        like: { ...l.dataValues }
+      }
+    } catch (error) { console.log('In post  error'); }
+  }))
+
+  return likesModified
+}
+
+const getCommentsData = async (postId) => {
+  const comments = await commentModel.findAll({
+    where: {
+      postId
+    }
+  })
+  // group the comments together on the basis of user
+  const commentsModified = await Promise.all(comments.map(async (comment) => {
+    try {
+      const user = await userModel.findByPk(comment.dataValues.userEmail)
+      const { firstName, lastName, profilePic, email } = user
+      return {
+        user: { firstName, lastName, profilePic, email },
+        comment: { ...comment.dataValues }
+      }
+    } catch (error) { }
+  }))
+
+  return commentsModified;
+}
+
 const modifyData = async (allPosts, isMyPosts) => {
   if (isMyPosts) {
     const userData = await userModel.findByPk(allPosts[0].dataValues.email);
     const data = await Promise.all(allPosts.map(async (post) => {
       try {
-        const likes = await postLikeModel.findAll({
-          where: {
-            postId: post.dataValues.postID
-          }
-        })
 
-        // group likes together on the basis of users
-        const likesModified = await Promise.all(likes.map(async l => {
-          try {
-            const user = await userModel.findByPk(l.dataValues.userEmail)
-            const { firstName, lastName, profilePic, email } = user
-            return {
-              user: { firstName, lastName, profilePic, email },
-              like: { ...l.dataValues }
-            }
-          } catch (error) { console.log('In post  error'); }
-        }))
+        const likes = await getLikesData(post.dataValues.postID)
+        const comments = await getCommentsData(post.dataValues.postID)
 
-        const comments = await commentModel.findAll({
-          where: {
-            postId: post.postID
-          }
-        })
-        // group the comments together on the basis of user
-        const commentsModified = await Promise.all(comments.map(async (comment) => {
-          try {
-            const user = await userModel.findByPk(comment.dataValues.userEmail)
-            const { firstName, lastName, profilePic, email } = user
-            return {
-              user: { firstName, lastName, profilePic, email },
-              comment: { ...comment.dataValues }
-            }
-          } catch (error) { }
-        }))
 
         return {
-          ...post.dataValues,
+          ...post.toJSON(),
           likes: {
-            count: likesModified.length,
-            likes: likesModified
+            count: likes.length,
+            likes
           },
           comments: {
-            count: commentsModified.length,
-            comments: commentsModified
+            count: comments.length,
+            comments
           },
-          images: JSON.parse(post.dataValues.images),
           user: {
             firstName: userData.firstName,
             lastName: userData.lastName,
@@ -166,7 +179,22 @@ const singlePost = async (req, res) => {
     const id = req.params.id
     const post = await postModel.findByPk(id)
     if (!post) return res.status(404).send(responseObject("Post not found", 404, "", "Id is not valid"))
-    return res.status(200).send(responseObject("Post found", 200, post, ""))
+
+    const likes = await getLikesData(id);
+    const comments = await getCommentsData(id);
+
+    const data = {
+      ...post.toJSON(),
+      likes: {
+        count: likes.length,
+        likes
+      },
+      comments: {
+        count: comments.length,
+        comments
+      },
+    }
+    return res.status(200).send(responseObject("Post found", 200, data, ""))
   } catch (error) {
     return res.status(500).send(responseObject("Server error", 500, "", "Interval server error"))
   }
