@@ -4,16 +4,52 @@ const userModel = require('../../models/userModel');
 const { uploadToCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary');
 const { responseObject } = require('../../utils/responseObject');
 const { sortData } = require('../../utils/sortdata');
+const { Op } = require("sequelize")
 
 
 const userAtrributesObject = {
     include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] }]
 }
 
+
+
 const getAllCourses = async (req, res) => {
+    const attributes = ["parentCategory", "title", "mode", "courseDuration", "classDays", "classDuration", "courseFee", "description", "authorEmail"]
     try {
-        const course = await courseModel.findAll(userAtrributesObject);
-        const data = sortData(course)
+        const queryParams = req.query
+        const whereClause = {};
+        for (const key in queryParams) {
+            if (attributes.includes(key)) {
+                whereClause[key] = {
+                    [Op.like]: `%${queryParams[key]}%`
+
+                };
+            }
+        }
+
+        const course = await courseModel.findAll({
+            where: whereClause
+            , ...userAtrributesObject
+        });
+        let data = sortData(course)
+        if (queryParams.subCategories.length > 0) {
+            data = await data.filter(course => {
+                const courseSub = course.subCategories;
+                let isTrue = false;
+
+                for (let i = 0; i < courseSub.length; i++) {
+                    if (queryParams.subCategories.includes(courseSub[i])) {
+                        isTrue = true;
+                        break;
+                    }
+                }
+
+                return isTrue
+            })
+
+
+        }
+
         return res.send(responseObject('Successfull', 200, data))
 
     } catch (error) {
