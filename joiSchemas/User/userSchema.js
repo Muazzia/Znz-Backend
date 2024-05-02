@@ -29,6 +29,18 @@ const validateAdditionalUserData = (body) => {
     return additionalUserDataSchema.validate(body)
 }
 
+const updateAdditionalUserDataSchema = Joi.object({
+    country: Joi.string().max(255),
+    language: Joi.string().max(255),
+    gender: Joi.string().valid('male', 'female', 'other'),
+    interests: Joi.array().items(Joi.string())
+})
+
+const validaUpdateAdditionalUserData = (body) => {
+    return updateAdditionalUserDataSchema.validate(body)
+}
+
+
 const changePassword = Joi.object({
     oldPassword: Joi.string().max(255).required(),
     newPassword: Joi.string().max(255).required(),
@@ -86,4 +98,4 @@ const validateUserPersonalInfoUpdate = (body) => {
     return userPersonalInfoUpdateSchema.validate(body)
 }
 
-module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate }
+module.exports = { validateForgotPass, validateSetPass, validateAdditionalUserData, validaUpdateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate }

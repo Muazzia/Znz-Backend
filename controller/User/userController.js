@@ -5,9 +5,10 @@ const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
 const { transporter } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
-const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate } = require("../../joiSchemas/User/userSchema");
+const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate, validaUpdateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
 const { uploadSingleToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const userDetailsModel = require("../../models/userAdditionalInformation");
+const { responseObject } = require("../../utils/responseObject");
 
 
 const passwordExludeObj = {
@@ -220,6 +221,33 @@ const additionalUserDetails = async (req, res) => {
   }
 }
 
+
+const updateAdditionalUserDetails = async (req, res) => {
+  try {
+    const { error, value } = validaUpdateAdditionalUserData(req.body)
+    console.log(value, "value",);
+
+    if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
+
+    if (Object.keys(value).length === 0) return res.status(400).send(responseObject("Please add atleast one value", 400, "", "update request is invalid"))
+
+    const userDetails = await userDetailsModel.findByPk(req.userEmail, {
+      ...passwordExludeObj
+    })
+    if (!userDetails) return res.status(404).send(responseObject("User not found", 404, "", "Id in not valid"))
+
+
+    await userDetails.update({
+      ...value
+    });
+    return res.status(200).send(responseObject("Details Updated Successfully", 200, userDetails))
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+  }
+}
+
+
 const addProfilePic = async (req, res) => {
   try {
     const user = await userModel.findByPk(req.userEmail, {
@@ -292,6 +320,7 @@ const getUserExtraDetails = async (req, res) => {
     return res.status(500).send('Server error')
   }
 }
+
 
 const changePassword = async (req, res) => {
   try {
@@ -376,6 +405,7 @@ module.exports = {
   userDashboard,
   logout,
   additionalUserDetails,
+  updateAdditionalUserDetails,
   addProfilePic,
   addCoverPic,
   getUserExtraDetails,
