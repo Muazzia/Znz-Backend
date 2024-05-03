@@ -32,7 +32,7 @@ const getAllCourses = async (req, res) => {
             , ...userAtrributesObject
         });
         let data = sortData(course)
-        if (queryParams.subCategories.length > 0) {
+        if (queryParams.subCategories && queryParams.subCategories.length > 0) {
             data = await data.filter(course => {
                 const courseSub = course.subCategories;
                 let isTrue = false;
