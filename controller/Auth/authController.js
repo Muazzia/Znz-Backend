@@ -237,7 +237,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    if (!userToFind.isEmailVerified) return res.status(401).send(responseObject("Unothorized: Email not Verified", 401, "", "Unothorized: Email not Verified"))
+    if (!userToFind.isEmailVerified) return res.status(401).send(responseObject("Unauthorized: Email not Verified", 401, "", "Unauthorized: Email not Verified"))
     if (userToFind.isBlock) return res.status(401).send(responseObject("User is Blocked", 401, "", "User is Blocked Can't Access"))
 
 
