@@ -24,7 +24,6 @@ const handleRegUser = async (jwtToken, email) => {
     <body style="font-family: Arial, sans-serif;">
       <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
         <h2 style="color: #333;">Email Verification</h2>
-        <p>To reset the password, click on the link below:</p>
         <a href=${process.env.verifyUserLink}?jwt=${jwtToken} target="_blank" style="text-decoration: none;">
           <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
             Verify User Email
