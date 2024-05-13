@@ -52,7 +52,7 @@ const handleRegUser = async (jwtToken, email) => {
 
 const handleResetPassword = async (jwtToken, email) => {
 
-  const content = getContent("Reset Password", "Reset Password", "To reset the password", "Reset", process.env.emailFrontEndLink, jwtToken)
+  const content = getContent("Reset Password", "Reset Password", "To reset the password", "Reset Password", process.env.emailFrontEndLink, jwtToken)
 
   await transporter.sendMail({
     to: email,

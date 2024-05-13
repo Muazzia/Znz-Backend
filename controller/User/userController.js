@@ -68,7 +68,7 @@ const forgotPassword = async (req, res) => {
     await handleResetPassword(jwtToken, userToFind.email)
 
     // Send a success response to the client
-    return res.status(201).json({ statusCode: 201, message: "Password reset. Check your email." });
+    return res.status(201).json({ statusCode: 201, message: "Reset Link Sent. Check your email." });
 
   } catch (error) {
     console.error("Error processing forgotPassword:", error);
@@ -99,7 +99,7 @@ const setPassword = async (req, res) => {
   if (password !== confirmPassword) {
     return res.status(400).json({
       statusCode: 400,
-      message: "password and confirm password doesnot matches",
+      message: "The password and confirm password do not match",
     });
   }
   try {
@@ -110,7 +110,7 @@ const setPassword = async (req, res) => {
     );
     return res.status(201).json({
       statusCode: 201,
-      message: "password changed",
+      message: "Password updated successfully",
       user: userPassword,
     });
   } catch (error) {
