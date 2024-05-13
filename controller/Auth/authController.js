@@ -234,7 +234,7 @@ const loginUser = async (req, res) => {
     if (userToFind.isBlock) return res.status(401).send(responseObject("User is Blocked", 401, "", "User is Blocked Can't Access"))
 
 
-    if (userToFind.googleUser || userToFind.length === 0) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
+    if (userToFind.googleUser) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
     // comparing the hashed password with the user's password in the req.body
     const validatePassword = await bcrypt.compare(
       password,
@@ -283,7 +283,11 @@ const loginUser = async (req, res) => {
 const googleLoginController = async (req, res) => {
   try {
     const { error, value: { accessToken } } = validateGoogleLogin(req.body);
-    if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
+    if (error) return res.status(400).send({
+      statusCode: 500,
+      message: error.message,
+      error: error.message,
+    })
 
     // let response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
     // const data = await res.json();
@@ -301,12 +305,28 @@ const googleLoginController = async (req, res) => {
       }
     });
 
-    if (googleResponse.status !== 200) return res.status(400).send("Try Again.", 400, "Error fetching user Data")
+    if (googleResponse.status !== 200) return res.status(400).send({
+      statusCode: 400,
+      message: "Token is not valid",
+      error: "Token is not valid",
+    })
     const userData = await googleResponse.json()
 
     const { given_name, family_name, picture, email } = userData
 
-    let user = await userModel.findByPk(email);
+    let user = await userModel.findByPk(email, {
+      attributes: {
+        exclude: ["password"]
+      }
+    })
+
+
+    if (user && !user.googleUser) return res.status(400).send(
+      {
+        statusCode: 400,
+        message: "User with Email Already Exist. Try loging with email & password",
+        error: "User with Email Already Exist. Try loging with email & password",
+      })
 
     if (!user) {
       user = await userModel.create({
@@ -318,6 +338,8 @@ const googleLoginController = async (req, res) => {
         isEmailVerified: true,
         role: 'user'
       })
+
+
     }
 
     const jwtToken = jwt.sign(
@@ -333,10 +355,18 @@ const googleLoginController = async (req, res) => {
     );
 
 
-
-    return res.status(200).send(responseObject("Login Successful", 200, { user, token: jwtToken }));
+    return res.status(200).send({
+      statusCode: 200,
+      message: "user successfully login",
+      user,
+      token: jwtToken,
+    });
   } catch (error) {
-    return res.status(500).send(responseObject("Internal Server Error", 500, "Server Error"))
+    return res.status(500).send({
+      statusCode: 500,
+      message: "internal server error",
+      error: error,
+    })
   }
 }
 
