@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
-const { transporter } = require("../../utils/nodeMailer/mailer");
+const { transporter, handleResetPassword } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate, validaUpdateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
 const { uploadSingleToCloudinary } = require("../../utils/cloudinary/cloudinary");
@@ -50,6 +50,8 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ statusCode: 400, message: "User not found" });
     }
 
+    if (userToFind.googleUser) return res.status(400).send({ statusCode: 400, message: "Google User Can't Reset Password" })
+
     if (userToFind.password === null) {
       return res.status(400).json({ statusCode: 400, message: "Email sent already." });
     }
@@ -63,32 +65,7 @@ const forgotPassword = async (req, res) => {
       { expiresIn: '20m' }
     );
 
-    const resetContent = `
-      <html>
-        <head>
-          <title>Reset Password</title>
-        </head>
-        <body style="font-family: Arial, sans-serif;">
-          <div style="background-color: #f2f2f2; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #333;">Email Verification</h2>
-            <p>To reset the password, click on the link below:</p>
-            <a href=${process.env.emailFrontEndLink}?jwt=${jwtToken} target="_blank" style="text-decoration: none;">
-              <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                Reset Password
-              </button>
-            </a>
-          </div>
-        </body>
-      </html>
-    `;
-
-
-    await transporter.sendMail({
-      to: userToFind.email,
-      subject: "Password Reset Email",
-      text: "Hello znz family, you have generated the request for the reset email password",
-      html: resetContent,
-    })
+    await handleResetPassword(jwtToken, userToFind.email)
 
     // Send a success response to the client
     return res.status(201).json({ statusCode: 201, message: "Password reset. Check your email." });

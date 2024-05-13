@@ -15,9 +15,5 @@ authRoutes.route("/login").post(loginUser);
 authRoutes.route('/login/google').post(googleLoginController)
 
 
-authRoutes.route("/google/login").get(googleLoginPage);
-authRoutes.route("/auth/google").get(authGoogle);
-authRoutes.route("/auth/google/callback").get(googleCallback)
-
 
 module.exports = authRoutes

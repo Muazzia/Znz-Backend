@@ -1,9 +1,8 @@
 const userModel = require("../../models/userModel");
 const { Op } = require('sequelize')
 const bcrypt = require("bcrypt");
-const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const { validateRegister, validateLogin } = require("../../joiSchemas/Auth/auth");
+const { validateRegister, validateLogin, validateGoogleLogin } = require("../../joiSchemas/Auth/auth");
 const { handleRegUser } = require("../../utils/nodeMailer/mailer");
 const { responseObject } = require("../../utils/responseObject");
 
@@ -18,21 +17,15 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // const chkOldUser = await userModel.findByPk(value.email)
-
-    // if (chkOldUser) return res.status(400).send({
-    //   statusCode: 400,
-    //   message: "User Already Exist",
-    // })
 
     const chkOldUser = await userModel.findOne({
       where: {
         [Op.or]: [
           { email: value.email },
-          { firstName: value.firstName } // Add additional condition to check firstName
         ]
       }
     });
+
 
     if (chkOldUser) {
       if (chkOldUser.email === value.email) {
@@ -241,7 +234,7 @@ const loginUser = async (req, res) => {
     if (userToFind.isBlock) return res.status(401).send(responseObject("User is Blocked", 401, "", "User is Blocked Can't Access"))
 
 
-    if (userToFind.googleUser) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
+    if (userToFind.googleUser || userToFind.length === 0) return res.status(400).send(responseObject('Cant Login using Email and password', 400, "", "Google User"))
     // comparing the hashed password with the user's password in the req.body
     const validatePassword = await bcrypt.compare(
       password,
@@ -287,29 +280,48 @@ const loginUser = async (req, res) => {
   }
 };
 
-const googleLoginPage = (req, res) => {
-  res.render("googlePage");
-};
+const googleLoginController = async (req, res) => {
+  try {
+    const { error, value: { accessToken } } = validateGoogleLogin(req.body);
+    if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
 
-const authGoogle = passport.authenticate("google", { scope: ["profile", "email"] });
+    // let response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+    // const data = await res.json();
+
+    // if (response.status !== 200) {
+    //   console.log("in if 1");
+    //   console.error('Error verifying access token:', data.error_description);
+    //   return res.status(400).send(responseObject("Invalid Access Token", 400, "Invalid access token"));
+    // }
 
 
-const googleCallback = (req, res) => {
-  passport.authenticate('google', (err, user) => {
-    if (err) {
-      return res.status(400).json({ message: "Error while login", error: err });
-    }
+    const googleResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    if (googleResponse.status !== 200) return res.status(400).send("Try Again.", 400, "Error fetching user Data")
+    const userData = await googleResponse.json()
+
+    const { given_name, family_name, picture, email } = userData
+
+    let user = await userModel.findByPk(email);
 
     if (!user) {
-      // Authentication failed, redirect to the login page or handle accordingly
-      return res.status(400).json({ message: "authentication failed" });
+      user = await userModel.create({
+        firstName: given_name,
+        lastName: family_name,
+        profilePic: picture,
+        email,
+        googleUser: true,
+        isEmailVerified: true,
+        role: 'user'
+      })
     }
 
-    // Authentication successful, redirect to the profile page or any other route
-    // console.log(user);
     const jwtToken = jwt.sign(
       {
-        userID: user.userID,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
@@ -319,9 +331,16 @@ const googleCallback = (req, res) => {
       process.env.Secret_KEY,
       { expiresIn: process.env.expiry_time }
     );
-    return res.status(201).json({ message: "user login successfully!", user, token: jwtToken });
-  })(req, res);
-};
 
 
-module.exports = { registerUser, registerSuperAdmin, loginUser, googleLoginPage, authGoogle, googleCallback, verifyEmail, resendEmail };
+
+    return res.status(200).send(responseObject("Login Successful", 200, { user, token: jwtToken }));
+  } catch (error) {
+    return res.status(500).send(responseObject("Internal Server Error", 500, "Server Error"))
+  }
+}
+
+
+
+
+module.exports = { googleLoginController, registerUser, registerSuperAdmin, loginUser, verifyEmail, resendEmail };
