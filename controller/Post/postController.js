@@ -280,17 +280,26 @@ const addingPost = async (req, res) => {
 
 const allPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 10; 
+    const offset = (page - 1) * limit;
     const postData = await postModel.findAll();
-
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "No Post Found", data: postData })
-
     const data = await modifyData(postData)
-
-    return res
-      .status(200)
-      .json({ statusCode: 200, message: "All posts fetched", data });
+    const paginatedData = data.slice(offset, offset + limit);
+     return res.status(200).json({
+      statusCode: 200,
+      message: "All posts fetched",
+      data: paginatedData,
+      pagination: {
+        totalPosts: data.length,
+        currentPage: page,
+        totalPages: Math.ceil(data.length / limit),
+        pageSize: limit
+      }
+    });
   } catch (error) {
     return res.status('500').send('Server Error')
   }
@@ -321,6 +330,7 @@ const delPost = async (req, res) => {
     return res.status(500).send('Server Error')
   }
 }
+
 
 module.exports = { addingPost, myPost, allPosts, delPost, userPost, singlePost };
 
