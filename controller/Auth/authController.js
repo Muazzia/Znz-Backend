@@ -310,9 +310,18 @@ const googleLoginController = async (req, res) => {
       message: "Token is not valid",
       error: "Token is not valid",
     })
+
     const userData = await googleResponse.json()
 
     const { given_name, family_name, picture, email } = userData
+
+    if (!email) return res.status(400).send({
+      statusCode: 400,
+      message: "Invalid Token",
+      error: "Invalid Token",
+    })
+
+
 
     let user = await userModel.findByPk(email, {
       attributes: {
@@ -328,10 +337,12 @@ const googleLoginController = async (req, res) => {
         error: "User with Email Already Exist. Try loging with email & password",
       })
 
+
+
     if (!user) {
       user = await userModel.create({
         firstName: given_name,
-        lastName: family_name,
+        lastName: family_name || " ",
         profilePic: picture,
         email,
         googleUser: true,
@@ -365,7 +376,7 @@ const googleLoginController = async (req, res) => {
     return res.status(500).send({
       statusCode: 500,
       message: "internal server error",
-      error: error,
+      error: "Server Error try again",
     })
   }
 }
