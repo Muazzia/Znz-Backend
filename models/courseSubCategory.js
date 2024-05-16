@@ -1,8 +1,9 @@
 const { DataTypes } = require('sequelize')
-const sequelize = require("../database/connection")
+const sequelize = require('../database/connection')
 
-const subCategory = sequelize.define('subCategory', {
-    subCategoryId: {
+
+const courseSubCategory = sequelize.define("courseSubCategory", {
+    courseSubCategoryId: {
         type: DataTypes.UUID,
         allowNull: false,
         primaryKey: true,
@@ -17,10 +18,10 @@ const subCategory = sequelize.define('subCategory', {
 sequelize
     .sync()
     .then(() => {
-        console.log("SubCategory synchronized with the database(znz).");
+        console.log("courseSubCategory synchronized with the database(znz).");
     })
     .catch((error) => {
-        console.error("Error synchronizing SubCategory", error);
+        console.error("Error synchronizing courseSubCategory", error);
     });
 
-module.exports = subCategory
+module.exports = courseSubCategory
