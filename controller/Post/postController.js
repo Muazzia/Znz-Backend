@@ -292,7 +292,8 @@ const allPosts = async (req, res) => {
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data });
   } catch (error) {
-    return res.status('500').send('Server Error')
+    console.log(error);
+    return res.status(500).send('Server Error')
   }
 }
 
