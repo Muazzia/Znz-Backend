@@ -148,8 +148,8 @@ const modifyData = async (allPosts, isMyPosts) => {
 const myPost = async (req, res) => {
   try {
     const userEmail = req.userEmail;
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const postData = await postModel.findAll({
       where: { email: userEmail },
@@ -160,11 +160,11 @@ const myPost = async (req, res) => {
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
     const data = await modifyData(postData, true)
-    return res.status(200).json({ 
-      statusCode: 200, 
-        message: "All posts fetched",
-        data
-       });
+    return res.status(200).json({
+      statusCode: 200,
+      message: "All posts fetched",
+      data
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -204,8 +204,8 @@ const singlePost = async (req, res) => {
 const userPost = async (req, res) => {
   try {
     const userEmail = req.params.email
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const postData = await postModel.findAll({
       where: { email: userEmail },
@@ -221,10 +221,11 @@ const userPost = async (req, res) => {
 
     return res
       .status(200)
-      .json({ statusCode: 200, 
+      .json({
+        statusCode: 200,
         message: "All posts fetched",
         data
-       });
+      });
   } catch (error) {
     return res.status(500).send('Server Error')
   }
@@ -288,20 +289,26 @@ const addingPost = async (req, res) => {
 
 const allPosts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
-    const offset = (page - 1) * limit;
-    
-    const postData = await postModel.findAll({
-      limit,
-      offset
-    });
+    let postData;
+    if (Object.keys(req.query).length > 0) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+
+      postData = await postModel.findAll({
+        limit,
+        offset
+      });
+    } else {
+      postData = await postModel.findAll();
+    }
+
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "No Post Found", data: postData })
     const data = await modifyData(postData)
     //const paginatedData = data.slice(offset, offset + limit);
-     return res.status(200).json({
+    return res.status(200).json({
       statusCode: 200,
       message: "All posts fetched",
       data
