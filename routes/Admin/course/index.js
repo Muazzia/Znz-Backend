@@ -1,23 +1,26 @@
 const express = require("express")
 const courseRouter = express.Router();
-const { getAllCourses, getAllCoursesOfASpecificUser, deleteCourse } = require('../../../controller/Admin/course')
+const { getAllCourses, getAllCoursesOfASpecificUser, deleteCourse, getAllParentCat, getAllSubCat, getAParentCat, createParentCat, createSubCat, deleteParentCat, deleteSubCat } = require('../../../controller/Admin/course')
+
+
+
+
+// course Cat Routes
+courseRouter.get('/parent', getAllParentCat)
+courseRouter.get('/sub', getAllSubCat)
+courseRouter.get('/parent/:id', getAParentCat)
+courseRouter.get('/sub/:id', getAllSubCat)
+courseRouter.post('/parent', createParentCat)
+courseRouter.post('/sub', createSubCat)
+courseRouter.delete('/parent/:id', deleteParentCat)
+courseRouter.delete('/sub/:id', deleteSubCat)
+courseRouter.put('/parent/:id')
+courseRouter.put('/sub/:id')
 
 
 courseRouter.get('', getAllCourses)
 courseRouter.get('/:userEmail', getAllCoursesOfASpecificUser)
 courseRouter.delete('/:id', deleteCourse)
-
-// course Cat Routes
-courseRouter.get('/parent')
-courseRouter.get('/sub')
-courseRouter.get('/parent/:id')
-courseRouter.get('/sub/:id')
-courseRouter.post('/parent')
-courseRouter.post('/sub')
-courseRouter.delete('/parent/:id')
-courseRouter.delete('/sub/:id')
-courseRouter.put('/parent/:id')
-courseRouter.put('/sub/:id')
 
 
 module.exports = courseRouter
