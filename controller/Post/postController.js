@@ -145,17 +145,27 @@ const modifyData = async (allPosts, isMyPosts) => {
   return data ? data : []
 
 }
+
 const myPost = async (req, res) => {
   try {
     const userEmail = req.userEmail;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
-    const postData = await postModel.findAll({
-      where: { email: userEmail },
-      limit,
-      offset
-    });
+    let postData
+    if (Object.keys(req.query).length > 0) {
+
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      postData = await postModel.findAll({
+        where: { email: userEmail },
+        limit,
+        offset
+      });
+    } else {
+      postData = await postModel.findAll({
+        where: { email: userEmail }
+      });
+    }
+
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
@@ -204,14 +214,24 @@ const singlePost = async (req, res) => {
 const userPost = async (req, res) => {
   try {
     const userEmail = req.params.email
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
-    const postData = await postModel.findAll({
-      where: { email: userEmail },
-      limit,
-      offset
-    });
+    let postData;
+
+    if (Object.keys(req.query).length > 0) {
+
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      postData = await postModel.findAll({
+        where: { email: userEmail },
+        limit,
+        offset
+      });
+    } else {
+      postData = await postModel.findAll({
+        where: { email: userEmail }
+      });
+    }
+
 
     if (postData.length === 0) return res
       .status(200)
@@ -322,7 +342,6 @@ const allPosts = async (req, res) => {
 const delPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    console.log(postId);
     const post = await postModel.findByPk(postId)
     if (!post) return res.status(404).send('Post not found')
 
