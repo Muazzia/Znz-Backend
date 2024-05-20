@@ -275,13 +275,12 @@ const addCoverPic = async (req, res) => {
     }
 
     await user.update({
-      coverPic: cloudinaryResponse.secure_url
+      coverPic: cloudinaryResponse.data
     })
 
 
     return res.status(201).send({ message: "Cover Photo Updated Successfully", user })
   } catch (error) {
-    console.log(error);
     res.status(500).send('Server Error')
   }
 }
