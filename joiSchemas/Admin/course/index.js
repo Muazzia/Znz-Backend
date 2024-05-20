@@ -10,7 +10,8 @@ const validateCreateParentCat = (data) => {
 }
 
 const courseSubCat = Joi.object({
-    name: Joi.string().max(255).required()
+    name: Joi.string().max(255).required(),
+    parentCategoryId: Joi.string().max(255).required()
 })
 
 const validateCreateSubCat = (data) => {

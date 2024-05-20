@@ -1,5 +1,7 @@
 const { validateCreateCourse, validateUpdateCourse } = require('../../joiSchemas/Course/course');
 const courseModel = require('../../models/courseModel');
+const courseParentCategory = require('../../models/courseParentCategory');
+const courseSubCategory = require('../../models/courseSubCategory');
 const userModel = require('../../models/userModel');
 const { uploadToCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary');
 const { responseObject } = require('../../utils/responseObject');
@@ -8,7 +10,11 @@ const { Op } = require("sequelize")
 
 
 const userAtrributesObject = {
-    include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] }]
+    include: [
+        { model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] },
+        { model: courseParentCategory, attributes: ['courseParentCategoryId', 'name'] },
+        { model: courseSubCategory, as: 'subCategories', through: { attributes: [] } }
+    ]
 }
 
 
@@ -29,6 +35,9 @@ const getAllCourses = async (req, res) => {
 
         const course = await courseModel.findAll({
             where: whereClause
+            , attributes: {
+                exclude: ["parentCategory"]
+            }
             , ...userAtrributesObject
         });
         let data = sortData(course)
@@ -126,6 +135,9 @@ const createCourse = async (req, res) => {
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
 
 
+        const parentCategory = await courseParentCategory.findByPk(value.parentCategory)
+        if (!parentCategory) return res.status(404).send(responseObject("Course not found", 404, "", "Course id is invalid"))
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
                 statusCode: 400,
@@ -141,8 +153,24 @@ const createCourse = async (req, res) => {
 
         let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
 
+
+        if (value.subCategories && value.subCategories.length > 0) {
+            const subCategories = await courseSubCategory.findAll({
+                where: {
+                    courseSubCategoryId: value.subCategories,
+                },
+            });
+            if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
+            await course.addSubCategories(subCategories);
+        }
+
         if (!course) return res.status(404).send(responseObject("Course not created", 404))
-        course = await courseModel.findByPk(course.courseId, { ...userAtrributesObject })
+
+        course = await courseModel.findByPk(course.courseId, {
+            ...userAtrributesObject, attributes: {
+                exclude: ['parentCategory']
+            }
+        })
 
 
         return res.send(responseObject("Course Created Successfully", 200, course))

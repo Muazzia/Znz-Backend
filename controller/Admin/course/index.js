@@ -7,12 +7,18 @@ const courseSubCat = require('../../../models/courseSubCategory')
 const { validateCreateParentCat, validateCreateSubCat } = require("../../../joiSchemas/Admin/course")
 
 
+const subCategoryOptionObject = {
+    include: [{ model: courseParentCat, attributes: ["courseParentCategoryId", "name"] }],
+    attributes: {
+        exclude: ["parentCategoryId"]
+    }
+}
 
 
 const getAllParentCat = async (req, res) => {
     try {
         const data = await courseParentCat.findAll();
-        console.log(data, "in get all parent");
+
         return res.status(200).send(responseObject("Succesfully retrieved Data", 200, data))
     } catch (error) {
         return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))
@@ -21,11 +27,21 @@ const getAllParentCat = async (req, res) => {
 
 const getAllSubCat = async (req, res) => {
     try {
-        const data = await courseSubCat.findAll();
-        console.log(data, "in get all parent 123");
+        let data;
+        if (Object.keys(req.query).length > 0) {
+            const parentCategoryId = req.query.parentCategoryId
+            data = await courseSubCat.findAll({
+                ...subCategoryOptionObject, where: {
+                    parentCategoryId
+                }
+            });
+        } else {
+            data = await courseSubCat.findAll({ ...subCategoryOptionObject })
+        }
 
         return res.status(200).send(responseObject("Succesfully retrieved Data", 200, data))
     } catch (error) {
+        console.log(error);
         return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))
     }
 }
@@ -45,7 +61,7 @@ const getAParentCat = async (req, res) => {
 const getASubCat = async (req, res) => {
     try {
         const id = req.params.id
-        const data = await courseParentCat.findByPk(id);
+        const data = await courseParentCat.findByPk(id, { ...subCategoryOptionObject });
 
         if (!data) return res.status(404).send(responseObject("Id is not valid", 404, "sub category not found"))
         return res.status(200).send(responseObject("Succesfully retrieved Data", 200, data))
@@ -81,6 +97,10 @@ const createSubCat = async (req, res) => {
         const { error, value } = validateCreateSubCat(req.body)
         if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
 
+        const parentCategory = await courseParentCat.findByPk(value.parentCategoryId);
+
+        if (!parentCategory) return res.status(400).send(responseObject("Parent Category is not valid", 400, "Parent Category not found"))
+
         const category = await courseSubCat.findOne({
             where: {
                 name: value.name
@@ -90,8 +110,9 @@ const createSubCat = async (req, res) => {
         if (category) return res.status(400).send(responseObject("category with same name already exist", 400, "", "category with same name already exist"))
 
         const data = await courseSubCat.create({ ...value })
+        const subCat = await courseSubCat.findByPk(data.courseSubCategoryId, { ...subCategoryOptionObject })
 
-        return res.status(201).send(responseObject("created successfully", 201, data))
+        return res.status(201).send(responseObject("created successfully", 201, subCat))
     } catch (error) {
         return res.status(500).send(responseObject("Internal Server Error", 500, "Server Error"))
     }
@@ -114,7 +135,7 @@ const deleteParentCat = async (req, res) => {
 const deleteSubCat = async (req, res) => {
     try {
         const id = req.params.id
-        const data = await courseSubCat.findByPk(id);
+        const data = await courseSubCat.findByPk(id, { ...subCategoryOptionObject });
 
         if (!data) return res.status(404).send(responseObject("Id is not valid", 404, "sub category not found"))
 

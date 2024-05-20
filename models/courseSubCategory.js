@@ -12,6 +12,14 @@ const courseSubCategory = sequelize.define("courseSubCategory", {
     name: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    parentCategoryId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: "courseparentcategories",
+            key: "courseParentCategoryId"
+        }
     }
 })
 
