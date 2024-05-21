@@ -22,66 +22,85 @@ const userAtrributesObject = {
 const getAllCourses = async (req, res) => {
     const attributes = ["parentCategory", "title", "mode", "courseDuration", "classDays", "classDuration", "courseFee", "description", "authorEmail"]
     try {
-        const queryParams = req.query
-        const whereClause = {};
-        for (const key in queryParams) {
-            if (attributes.includes(key)) {
-                whereClause[key] = {
-                    [Op.like]: `%${queryParams[key]}%`
 
-                };
-            }
-        }
+        let data;
+        if (req.query && Object.keys(req.query).length > 0) {
 
-        const course = await courseModel.findAll({
-            where: whereClause
-            , attributes: {
-                exclude: ["parentCategory"]
-            }
-            , ...userAtrributesObject
-        });
-        let data = sortData(course)
-        if (queryParams.subCategories && queryParams.subCategories.length > 0) {
-            data = await data.filter(course => {
-                const courseSub = course.subCategories;
-                let isTrue = false;
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const offset = (page - 1) * limit;
 
-                for (let i = 0; i < courseSub.length; i++) {
-                    if (queryParams.subCategories.includes(courseSub[i])) {
-                        isTrue = true;
-                        break;
-                    }
+            const queryParams = req.query
+            const whereClause = {};
+
+            for (const key in queryParams) {
+                if (attributes.includes(key)) {
+                    whereClause[key] = {
+                        [Op.like]: `%${queryParams[key]}%`
+
+                    };
                 }
-
-                return isTrue
+            }
+            data = await courseModel.findAll({
+                where: whereClause,
+                limit,
+                offset,
+                attributes: {
+                    exclude: ["parentCategory"]
+                }
+                , ...userAtrributesObject
             })
-
-
+        } else {
+            data = await courseModel.findAll({
+                attributes: {
+                    exclude: ["parentCategory"]
+                }
+                , ...userAtrributesObject
+            })
         }
+        data = sortData(data)
 
-        return res.send(responseObject('Successfull', 200, data))
+        return res.status(200).send(responseObject('Successfull', 200, data))
 
     } catch (error) {
-        console.log(error);
         return res.status(500).send(responseObject('Server Error', 500))
     }
 }
 
 const getMyCourses = async (req, res) => {
     try {
+        let data;
+
         const userEmail = req.userEmail;
-        const course = await courseModel.findAll({
-            where: {
-                authorEmail: userEmail
-            },
-            ...userAtrributesObject
-        });
-        const data = sortData(course)
+
+        if (req.query && Object.keys(req.query).length > 0) {
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const offset = (page - 1) * limit;
+
+            data = await courseModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                },
+                limit,
+                offset,
+                ...userAtrributesObject
+            })
+
+        } else {
+
+            data = await courseModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                },
+                ...userAtrributesObject
+            });
+        }
+        data = sortData(data)
 
         return res.status(200).send(responseObject("Successfully Reterived Data", 200, data))
 
     } catch (error) {
-        console.log(error);
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
@@ -180,11 +199,11 @@ const createCourse = async (req, res) => {
     }
 }
 
-
 // there are things need to change modify it again
 const updateCourse = async (req, res) => {
     try {
         const { error, value } = validateUpdateCourse(req.body)
+
         if (error) return res.status(400).send({ status: 400, message: error.message });
 
         const userEmail = req.userEmail

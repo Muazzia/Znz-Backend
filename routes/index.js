@@ -17,12 +17,20 @@ const followerR = require('../routes/Follower/follower')
 const productR = require('../routes/Product/product')
 
 
+const { getAParentCat, getAllSubCat, getAllParentCat } = require('../controller/Admin/course')
 
 
 
 router.use('/validatetoken', checkExistingToken, checkJWT, tokenR)
 router.use("/auth/user", authR);
+
+router.get('/course/parent', checkExistingToken, checkJWT, getAllParentCat)
+router.get('/course/sub', checkExistingToken, checkJWT, getAllSubCat)
+router.get('/course/parent/:id', checkExistingToken, checkJWT, getAParentCat)
+router.get('/course/sub/:id', checkExistingToken, checkJWT, getAllSubCat)
+
 router.use('/admin', adminCheckJWT, adminR)
+
 router.use("/user", userR);
 
 router.use("/user/story", checkExistingToken, checkJWT, storyR);

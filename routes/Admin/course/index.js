@@ -6,10 +6,10 @@ const { getAllCourses, getAllCoursesOfASpecificUser, deleteCourse, getAllParentC
 
 
 // course Cat Routes
-courseRouter.get('/parent', getAllParentCat)
-courseRouter.get('/sub', getAllSubCat)
-courseRouter.get('/parent/:id', getAParentCat)
-courseRouter.get('/sub/:id', getAllSubCat)
+// courseRouter.get('/parent', getAllParentCat)
+// courseRouter.get('/sub', getAllSubCat)
+// courseRouter.get('/parent/:id', getAParentCat)
+// courseRouter.get('/sub/:id', getAllSubCat)
 
 courseRouter.post('/parent', createParentCat)
 courseRouter.post('/sub', createSubCat)
