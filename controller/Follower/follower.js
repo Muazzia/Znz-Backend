@@ -12,7 +12,6 @@ const modifyData = async (followers, isUserReq) => {
                 const userEmail = isUserReq ? follower.dataValues.userEmail : follower.dataValues.followingEmail;
                 const userData = await userModel.findByPk(userEmail)
                 if (!userData) return {};
-
                 const { firstName, lastName, profilePic, email, coverPic } = userData
                 return {
                     ...follower.dataValues,
@@ -26,8 +25,6 @@ const modifyData = async (followers, isUserReq) => {
                 }
             } catch (error) { }
         }))
-
-
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         return data ? data : []
     } catch (error) {
@@ -38,15 +35,28 @@ const modifyData = async (followers, isUserReq) => {
 const getAllFollower = async (req, res) => {
     try {
         const userEmail = req.userEmail;
-
-        const followers = await followerModel.findAll({
+        let followerData;
+        if(Object.keys(req.query).length  > 0){
+            const page = parseInt(req.query.page) || 1; 
+            const limit = parseInt(req.query.limit) || 10; 
+            const offset = (page - 1) * limit;
+         followerData = await followerModel.findAll({
+            where: {
+                followingEmail: userEmail,
+                status: 'accepted',
+            },
+            limit,
+            offset
+        });
+    }else{
+        followerData = await followerModel.findAll({
             where: {
                 followingEmail: userEmail,
                 status: 'accepted'
             }
         });
-
-        const data = await modifyData(followers, true)
+    }
+        const data = await modifyData(followerData, true)
         return res.send({ message: 'all Followers', staus: 200, data })
     } catch (error) {
         return res.status(500).send('Server Error')
@@ -56,15 +66,28 @@ const getAllFollower = async (req, res) => {
 const getAllFollowing = async (req, res) => {
     try {
         const userEmail = req.userEmail;
-
-        const followers = await followerModel.findAll({
+        let followingData;
+        if(Object.keys(req.query).length  > 0){
+            const page = parseInt(req.query.page) || 1; 
+            const limit = parseInt(req.query.limit) || 10; 
+            const offset = (page - 1) * limit;
+            followingData = await followerModel.findAll({
+            where: {
+                userEmail: userEmail,
+                status: 'accepted',
+            },
+            limit,
+            offset
+        });
+    }else{
+        followingData = await followerModel.findAll({
             where: {
                 userEmail: userEmail,
                 status: 'accepted'
             }
         });
-
-        const data = await modifyData(followers, false)
+    }
+        const data = await modifyData(followingData, false)
         return res.send({ message: 'all Following', staus: 200, data })
     } catch (error) {
         return res.status(500).send('Server Error')
@@ -74,7 +97,6 @@ const getAllFollowing = async (req, res) => {
 const getASpeceficFollower = async (req, res) => {
     try {
         const id = req.params.id;
-
         const follower = await followerModel.findOne({
             where: {
                 followerId: id,
@@ -92,24 +114,18 @@ const createAFollowRequest = async (req, res) => {
     try {
         const { error, value } = validateCreateFollower(req.body)
         if (error) return res.status(400).send(error.message)
-
         const userEmail = req.userEmail;
-
         if (userEmail === value.followingEmail) return res.status(400).send('Following Email and User Email cant be same')
-
         const validateFollowingUser = await userModel.findByPk(value.followingEmail)
         if (!validateFollowingUser) return res.status(404).send('Following User Not Found')
-
         let follower = await followerModel.findOne({
             where: {
                 userEmail,
                 followingEmail: value.followingEmail
             }
         })
-
         if (follower && follower.status === "pending") return res.status(400).send({ status: 400, message: "Request is already Sent" })
         if (follower) return res.status(400).send({ status: 400, message: 'You are already Following' })
-
         follower = await followerModel.create({ ...value, userEmail })
         return res.status(201).send({ message: "Follower Request Sent", status: 201, data: follower })
     } catch (error) {
@@ -119,56 +135,45 @@ const createAFollowRequest = async (req, res) => {
 
 const deleteAFollower = async (req, res) => {
     try {
-
         const email = req.params.email;
-
         const follower = await followerModel.findOne({
             where: {
                 userEmail: email,
                 followingEmail: req.userEmail,
             },
         });
-
         if (!follower) return res.status(404).send('Follower not Found')
-
         await follower.destroy();
         return res.send({
             message: "Follower Deleted Successfully",
             status: 200,
             data: follower
         })
-
     } catch (error) {
         console.log(error);
         return res.status(500).send(error)
-
     }
 }
 
 const deleteAFollowing = async (req, res) => {
     try {
         const email = req.params.email;
-
         const follower = await followerModel.findOne({
             where: {
                 userEmail: req.userEmail,
                 followingEmail: email,
             },
         });
-
         if (!follower) return res.status(404).send('Following User not Found')
-
         await follower.destroy();
         return res.send({
             message: "Following Deleted Successfully",
             status: 200,
             data: follower
         })
-
     } catch (error) {
         console.log(error);
         return res.status(500).send(error)
-
     }
 }
 
@@ -176,13 +181,10 @@ const updateStatusOfFollower = async (req, res) => {
     try {
         const id = req.params.id;
         const userEmail = req.userEmail;
-
         const { error, value } = validateUpdateFollowStatus(req.body)
         if (error) return res.status(400).send(error.message)
-
         const email = value.email;
         const status = value.status
-
         const data = await followerModel.findOne({
             where: {
                 followerId: id,
@@ -191,14 +193,11 @@ const updateStatusOfFollower = async (req, res) => {
                 status: 'pending'
             }
         })
-
         if (!data) return res.status(404).send('Not Found');
-
         if (status === 'rejected') await data.destroy()
         await data.update({
             status
         })
-
         // const user=await userModel.findByPk(data.)
         res.status(200).send({ message: "Status Updated Successfully", status: 200, data: { ...data.dataValues, } })
     } catch (error) {
@@ -209,14 +208,12 @@ const updateStatusOfFollower = async (req, res) => {
 const getAllFollowRequests = async (req, res) => {
     try {
         const userEmail = req.userEmail;
-
         const requests = await followerModel.findAll({
             where: {
                 followingEmail: userEmail,
                 status: 'pending'
             }
         })
-
         const data = await modifyData(requests, true)
         return res.send({ message: 'All Requests Received', status: 200, data })
     } catch (error) {
