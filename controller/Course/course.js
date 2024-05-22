@@ -1,6 +1,8 @@
 const { object } = require('joi');
 const { validateCreateCourse, validateUpdateCourse } = require('../../joiSchemas/Course/course');
 const courseModel = require('../../models/courseModel');
+const courseParentCategory = require('../../models/courseParentCategory');
+const courseSubCategory = require('../../models/courseSubCategory');
 const userModel = require('../../models/userModel');
 const { uploadToCloudinary, uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinary');
 const { responseObject } = require('../../utils/responseObject');
@@ -9,95 +11,94 @@ const { Op } = require("sequelize")
 
 
 const userAtrributesObject = {
-    include: [{ model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] }]
+    include: [
+        { model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName', "bio"] },
+        { model: courseParentCategory, attributes: ['courseParentCategoryId', 'name'] },
+        { model: courseSubCategory, as: 'subCategories', through: { attributes: [] } }
+    ]
 }
 
 const getAllCourses = async (req, res) => {
     const attributes = ["parentCategory", "title", "mode", "courseDuration", "classDays", "classDuration", "courseFee", "description", "authorEmail"]
     try {
-        const queryParams = req.query
-        let courseData;
-        if(object.keys(req.query).lenght > 0){
-        const page = parseInt(req.query.page) || 1; 
-        const limit = parseInt(req.query.limit) || 10; 
-        const offset = (page - 1) * limit;
-        const whereClause = {};
-        for (const key in queryParams) {
-            if (attributes.includes(key)) {
-                whereClause[key] = {
-                    [Op.like]: `%${queryParams[key]}%`
-                };
-            }
-        }
-        courseData = await courseModel.findAll({
-            where: whereClause
-            , ...userAtrributesObject,
-            limit,
-            offset
-        });
-    }else{
-        const whereClause = {};
-        for (const key in queryParams) {
-            if (attributes.includes(key)) {
-                whereClause[key] = {
-                    [Op.like]: `%${queryParams[key]}%`
-                };
-            }
-        }
-        courseData = await courseModel.findAll({
-            where: whereClause
-            , ...userAtrributesObject
-        });
-    }
-        let data = sortData(courseData)
-        if (queryParams.subCategories && queryParams.subCategories.length > 0) {
-            data = await data.filter(course => {
-                const courseSub = course.subCategories;
-                let isTrue = false;
-                for (let i = 0; i < courseSub.length; i++) {
-                    if (queryParams.subCategories.includes(courseSub[i])) {
-                        isTrue = true;
-                        break;
-                    }
+
+        let data;
+        if (req.query && Object.keys(req.query).length > 0) {
+
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const offset = (page - 1) * limit;
+
+            const queryParams = req.query
+            const whereClause = {};
+
+            for (const key in queryParams) {
+                if (attributes.includes(key)) {
+                    whereClause[key] = {
+                        [Op.like]: `%${queryParams[key]}%`
+
+                    };
                 }
-                return isTrue
+            }
+            data = await courseModel.findAll({
+                where: whereClause,
+                limit,
+                offset,
+                attributes: {
+                    exclude: ["parentCategory"]
+                }
+                , ...userAtrributesObject
+            })
+        } else {
+            data = await courseModel.findAll({
+                attributes: {
+                    exclude: ["parentCategory"]
+                }
+                , ...userAtrributesObject
             })
         }
-        return res.send(responseObject('Successfull', 200, data))
+        data = sortData(data)
+
+        return res.status(200).send(responseObject('Successfull', 200, data))
+
     } catch (error) {
-        console.log(error);
         return res.status(500).send(responseObject('Server Error', 500))
     }
 }
 
 const getMyCourses = async (req, res) => {
     try {
+        let data;
+
         const userEmail = req.userEmail;
-        let courseData;
-        if(object.keys(req.query).lenght > 0){
-        const page = parseInt(req.query.page) || 1; 
-        const limit = parseInt(req.query.limit) || 10; 
-        const offset = (page - 1) * limit;
-        courseData = await courseModel.findAll({
-            where: {
-                authorEmail: userEmail
-            },
-            ...userAtrributesObject,
-            limit,
-            offset
-        });
-    }else{
-        courseData = await courseModel.findAll({
-            where: {
-                authorEmail: userEmail
-            },
-            ...userAtrributesObject
-        });
-    }
-        const data = sortData(courseData)
+
+        if (req.query && Object.keys(req.query).length > 0) {
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const offset = (page - 1) * limit;
+
+            data = await courseModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                },
+                limit,
+                offset,
+                ...userAtrributesObject
+            })
+
+        } else {
+
+            data = await courseModel.findAll({
+                where: {
+                    authorEmail: userEmail
+                },
+                ...userAtrributesObject
+            });
+        }
+        data = sortData(data)
+
         return res.status(200).send(responseObject("Successfully Reterived Data", 200, data))
     } catch (error) {
-        console.log(error);
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
 }
@@ -142,6 +143,11 @@ const createCourse = async (req, res) => {
         const userEmail = req.userEmail
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
+
+
+        const parentCategory = await courseParentCategory.findByPk(value.parentCategory)
+        if (!parentCategory) return res.status(404).send(responseObject("Course not found", 404, "", "Course id is invalid"))
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
                 statusCode: 400,
@@ -152,8 +158,27 @@ const createCourse = async (req, res) => {
         if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
         const imageUrls = imagesUploadResponse.data;
         let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
+
+
+        if (value.subCategories && value.subCategories.length > 0) {
+            const subCategories = await courseSubCategory.findAll({
+                where: {
+                    courseSubCategoryId: value.subCategories,
+                },
+            });
+            if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
+            await course.addSubCategories(subCategories);
+        }
+
         if (!course) return res.status(404).send(responseObject("Course not created", 404))
-        course = await courseModel.findByPk(course.courseId, { ...userAtrributesObject })
+
+        course = await courseModel.findByPk(course.courseId, {
+            ...userAtrributesObject, attributes: {
+                exclude: ['parentCategory']
+            }
+        })
+
+
         return res.send(responseObject("Course Created Successfully", 200, course))
     } catch (error) {
         console.log(error);
@@ -165,6 +190,7 @@ const createCourse = async (req, res) => {
 const updateCourse = async (req, res) => {
     try {
         const { error, value } = validateUpdateCourse(req.body)
+
         if (error) return res.status(400).send({ status: 400, message: error.message });
         const userEmail = req.userEmail
         const user = await userModel.findByPk(userEmail)

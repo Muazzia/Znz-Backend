@@ -275,13 +275,12 @@ const addCoverPic = async (req, res) => {
     }
 
     await user.update({
-      coverPic: cloudinaryResponse.secure_url
+      coverPic: cloudinaryResponse.data
     })
 
 
     return res.status(201).send({ message: "Cover Photo Updated Successfully", user })
   } catch (error) {
-    console.log(error);
     res.status(500).send('Server Error')
   }
 }
@@ -302,18 +301,18 @@ const getUserExtraDetails = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { error, value } = validateChangePassword(req.body)
-    if (error) return res.status(400).send(error.message)
+    if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
 
     const { oldPassword, newPassword, confirmPassword } = value
-    if (newPassword !== confirmPassword) return res.status(400).send('passwords doesnt match')
+    if (newPassword !== confirmPassword) return res.status(400).send(responseObject("Password's doesn't match", 400, "", "Password's doesn't match"))
 
     const user = await userModel.findByPk(req.userEmail)
-    if (!user) return res.status(404).send("User not found")
+    if (!user) return res.status(404).send(responseObject("User not found", 404, "", "User not found"))
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid old password' });
+      return res.status(401).json(responseObject("Invalid old password", 401, "", "Invalid old password"));
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -321,11 +320,11 @@ const changePassword = async (req, res) => {
     // Update user's password in the database
     await user.update({ password: hashedNewPassword });
 
-    return res.status(200).json({ message: 'Password changed successfully', user });
+    return res.status(200).json(responseObject("Password changed successfully", 200, user));
   }
   catch (error) {
     console.log(error);
-    return res.status(500).send('Server error')
+    return res.status(500).send(responseObject('Server error', 500, "", 'Server error'))
   }
 }
 

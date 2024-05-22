@@ -11,13 +11,14 @@ const courseModel = sequelize.define("courses", {
         primaryKey: true
     },
     parentCategory: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    subCategories: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: []
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: 'courseparentcategories',
+            key: "courseParentCategoryId"
+        },
+        onDelete: 'CASCADE',
+        onUpdate: "CASCADE"
     },
     images: {
         type: DataTypes.TEXT,
@@ -67,7 +68,8 @@ const courseModel = sequelize.define("courses", {
             model: 'users',
             key: "email"
         },
-        onDelete: "CASCADE"
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
     },
     // status: {
     //     type: DataTypes.ENUM,

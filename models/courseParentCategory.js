@@ -2,8 +2,8 @@ const { DataTypes } = require('sequelize')
 const sequelize = require('../database/connection')
 
 
-const categoryModel = sequelize.define("category", {
-    categoryId: {
+const courseParentCategory = sequelize.define("courseParentCategory", {
+    courseParentCategoryId: {
         type: DataTypes.UUID,
         allowNull: false,
         primaryKey: true,
@@ -18,10 +18,10 @@ const categoryModel = sequelize.define("category", {
 sequelize
     .sync()
     .then(() => {
-        console.log("categoryModel synchronized with the database(znz).");
+        console.log("courseParentCategory synchronized with the database(znz).");
     })
     .catch((error) => {
-        console.error("Error synchronizing categoryModel", error);
+        console.error("Error synchronizing courseParentCategory", error);
     });
 
-module.exports = categoryModel
+module.exports = courseParentCategory
