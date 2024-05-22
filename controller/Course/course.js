@@ -1,3 +1,4 @@
+const { object } = require('joi');
 const { validateCreateCourse, validateUpdateCourse } = require('../../joiSchemas/Course/course');
 const courseModel = require('../../models/courseModel');
 const courseParentCategory = require('../../models/courseParentCategory');
@@ -16,8 +17,6 @@ const userAtrributesObject = {
         { model: courseSubCategory, as: 'subCategories', through: { attributes: [] } }
     ]
 }
-
-
 
 const getAllCourses = async (req, res) => {
     const attributes = ["parentCategory", "title", "mode", "courseDuration", "classDays", "classDuration", "courseFee", "description", "authorEmail"]
@@ -99,7 +98,6 @@ const getMyCourses = async (req, res) => {
         data = sortData(data)
 
         return res.status(200).send(responseObject("Successfully Reterived Data", 200, data))
-
     } catch (error) {
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
     }
@@ -111,9 +109,7 @@ const getASpecificCourse = async (req, res) => {
         const course = await courseModel.findByPk(id, {
             ...userAtrributesObject
         });
-
         if (!course) return res.status(404).send(responseObject('Course Not Found', 404))
-
         // const data = await modifySinlge(course)
         return res.send(responseObject('Successful', 200, course))
     } catch (error) {
@@ -130,11 +126,8 @@ const deleteASpecificCourse = async (req, res) => {
                 authorEmail: req.userEmail
             },
             ...userAtrributesObject
-
         });
-
         if (!course) return res.status(404).send(responseObject('Course Not Found', 404))
-
         await course.destroy()
         return res.send(responseObject("Deleted Successfully", 200, course))
     } catch (error) {
@@ -147,9 +140,7 @@ const createCourse = async (req, res) => {
     try {
         const { error, value } = validateCreateCourse(req.body)
         if (error) return res.status(400).send({ status: 400, message: error.message });
-
         const userEmail = req.userEmail
-
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
 
@@ -163,13 +154,9 @@ const createCourse = async (req, res) => {
                 message: "Missing required parameter - images",
             });
         }
-
         const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "course")
         if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
-
         const imageUrls = imagesUploadResponse.data;
-
-
         let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
 
 
@@ -205,13 +192,9 @@ const updateCourse = async (req, res) => {
         const { error, value } = validateUpdateCourse(req.body)
 
         if (error) return res.status(400).send({ status: 400, message: error.message });
-
         const userEmail = req.userEmail
-
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
-
-
         const id = req.params.id;
         let course = await courseModel.findOne({
             where: {
@@ -219,40 +202,27 @@ const updateCourse = async (req, res) => {
                 authorEmail: userEmail
             }
         })
-
         if (!course) return res.status(404).send(responseObject('Course Not Found', 404, "", "Course Not Exist"))
-
         let imageUrls = [...course.images];
-
-
-
         // if (value.deletedImages && value.deletedImages.length !== 0)
         //     if (imageUrls.length === 1) return res.status(400).send(responseObject("Can't Delete Last Image", 400, "", "Need Atleast One Image"))
         // imageUrls = imageUrls.filter(imageUrl => {
         //     console.log(value.deletedImages.includes(imageUrl));
         //     return !value.deletedImages.includes(imageUrl)
         // })
-
         if (req.files) {
             for (const file of req.files) {
                 const cloudinaryResponse = await uploadToCloudinary(file, "znz/course");
                 if (cloudinaryResponse.error) {
                     return res.status(500).json(responseObject("Internal server error during image upload", 500, "", cloudinaryResponse.error.message));
                 }
-
                 imageUrls.push(cloudinaryResponse.secure_url);
             }
         }
-
-
         // let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
-
         await course.update({ ...value, authorEmail: userEmail, images: imageUrls })
-
         if (!course) return res.status(404).send(responseObject("Course not updated", 404))
         course = await courseModel.findByPk(course.courseId, { ...userAtrributesObject })
-
-
         return res.send(responseObject("Course Updated Successfully", 200, course))
     } catch (error) {
         console.log(error);

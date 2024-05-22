@@ -247,7 +247,7 @@ const addProfilePic = async (req, res) => {
       profilePic: cloudinaryResponse.data
     })
 
-    return res.status(201).send({ message: "Profule Pic Updated Successfully", user })
+    return res.status(201).send({ message: "Profile Pic Updated Successfully", user })
   } catch (error) {
     // console.log(error);
     return res.status(500).json({
