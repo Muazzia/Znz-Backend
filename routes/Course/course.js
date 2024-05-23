@@ -12,7 +12,7 @@ courseRouter.delete('/:id', deleteASpecificCourse)
 courseRouter.post('/', handleMulterUpload("images[]", false, 10), createCourse)
 
 // this need to be change
-// courseRouter.put('/:id', handleCourseUpload, updateCourse)
+courseRouter.put('/:id', handleMulterUpload("images[]", false, 10, false), updateCourse)
 
 
 module.exports = courseRouter

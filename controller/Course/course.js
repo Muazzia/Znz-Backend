@@ -164,6 +164,7 @@ const createCourse = async (req, res) => {
             const subCategories = await courseSubCategory.findAll({
                 where: {
                     courseSubCategoryId: value.subCategories,
+                    parentCategoryId: value.parentCategory
                 },
             });
             if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
@@ -192,9 +193,19 @@ const updateCourse = async (req, res) => {
         const { error, value } = validateUpdateCourse(req.body)
 
         if (error) return res.status(400).send({ status: 400, message: error.message });
+
         const userEmail = req.userEmail
+
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
+
+
+        let parentCategory
+        if (value.parentCategory) {
+            parentCategory = await courseParentCategory.findByPk(value.parentCategory)
+            if (!parentCategory) return res.status(404).send(responseObject("parent category not found", 404, "", "parent category id is not valid"))
+        }
+
         const id = req.params.id;
         let course = await courseModel.findOne({
             where: {
@@ -204,12 +215,35 @@ const updateCourse = async (req, res) => {
         })
         if (!course) return res.status(404).send(responseObject('Course Not Found', 404, "", "Course Not Exist"))
         let imageUrls = [...course.images];
-        // if (value.deletedImages && value.deletedImages.length !== 0)
-        //     if (imageUrls.length === 1) return res.status(400).send(responseObject("Can't Delete Last Image", 400, "", "Need Atleast One Image"))
-        // imageUrls = imageUrls.filter(imageUrl => {
-        //     console.log(value.deletedImages.includes(imageUrl));
-        //     return !value.deletedImages.includes(imageUrl)
-        // })
+
+
+        if (value.deletedImages) {
+
+            for (let i = 0; i < imageUrls.length; i++) {
+                imageUrls = imageUrls.filter(url => {
+                    return url === value.deletedImages[i] ? false : true;
+                })
+            }
+            if (imageUrls.length === 0) return res.status(404).send(responseObject("Can't delete require atleast one image", 400, "", "one image is a must"))
+        }
+
+
+        if (value.parentCategory && value.subCategories && value.subCategories.length > 0) {
+            const subCategories = await courseSubCategory.findAll({
+                where: {
+                    courseSubCategoryId: value.subCategories,
+                    parentCategoryId: value.parentCategory
+                },
+            });
+            if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
+
+
+            await course.setSubCategories([])
+            await course.addSubCategories(subCategories);
+        }
+
+
+
         if (req.files) {
             for (const file of req.files) {
                 const cloudinaryResponse = await uploadToCloudinary(file, "znz/course");
@@ -219,9 +253,10 @@ const updateCourse = async (req, res) => {
                 imageUrls.push(cloudinaryResponse.secure_url);
             }
         }
-        // let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
+
+
         await course.update({ ...value, authorEmail: userEmail, images: imageUrls })
-        if (!course) return res.status(404).send(responseObject("Course not updated", 404))
+
         course = await courseModel.findByPk(course.courseId, { ...userAtrributesObject })
         return res.send(responseObject("Course Updated Successfully", 200, course))
     } catch (error) {

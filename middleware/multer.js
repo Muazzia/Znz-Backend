@@ -36,7 +36,7 @@ const uploadSingle = multer({
 
 
 // yay create kia is ko add kr k daikh lo aik dfa
-const handleMulterUpload = (fieldName, isSingle, maxImagesInMultiple) => {
+const handleMulterUpload = (fieldName, isSingle, maxImagesInMultiple, isRequired = true) => {
   let upload;
   if (isSingle) upload = uploadSingle.single(fieldName);
   else upload = uploadMultiple.array(fieldName, maxImagesInMultiple)
@@ -58,23 +58,29 @@ const handleMulterUpload = (fieldName, isSingle, maxImagesInMultiple) => {
       }
 
       // Check if files are missing in the request
-      if (!isSingle) {
-        if (!req.files || req.files.length === 0) {
-          return res.status(400).json({
-            statusCode: 400,
-            message: `Missing required parameter ${fieldName}`,
-          });
+      if (!isRequired) {
+        next()
+      }
+      else {
+        if (!isSingle) {
+          if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+              statusCode: 400,
+              message: `Missing required parameter ${fieldName}`,
+            });
+          }
+        } else {
+          if (!req.file) {
+            return res.status(400).json({
+              statusCode: 400,
+              message: `Missing required parameter ${fieldName}`,
+            });
+          }
         }
-      } else {
-        if (!req.file) {
-          return res.status(400).json({
-            statusCode: 400,
-            message: `Missing required parameter ${fieldName}`,
-          });
-        }
+        next();
       }
 
-      next();
+
     });
   };
   const hanldeSinleUpload = (req, res, next) => {

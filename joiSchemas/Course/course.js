@@ -18,13 +18,17 @@ const validateCreateCourse = (body) => {
 }
 
 const updateCourseSchema = Joi.object({
-    parentCategory: Joi.string(),
-    subCategories: Joi.array(),
+    parentCategory: Joi.string().max(255),
+    subCategories: Joi.array().items(Joi.string()).when('parentCategory', {
+        is: Joi.exist(),
+        then: Joi.required(),
+        otherwise: Joi.optional()
+    }),
     title: Joi.string().max(255),
     mode: Joi.string().valid('online', 'onsite'),
-    courseDuration: Joi.string(),
+    courseDuration: Joi.string().max(255),
     classDays: Joi.array(),
-    classDuration: Joi.string(),
+    classDuration: Joi.string().max(255),
     courseFee: Joi.number().integer().min(1).max(2147483000),
     description: Joi.string().max(1000),
     deletedImages: Joi.array()
