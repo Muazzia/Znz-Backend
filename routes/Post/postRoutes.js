@@ -13,9 +13,9 @@ const { checkJWT } = require("../../middleware/authenticationMiddleware");
 
 
 postRouter.get("/", allPosts)
-postRouter.get('/:id', singlePost)
 postRouter.get("/my-posts", myPost);
 postRouter.get('/user-posts/:email', userPost)
+postRouter.get('/:id', singlePost)
 
 postRouter.post("/", handleMulterUpload("images", false, 10), addingPost);
 postRouter.delete("/:id", delPost)
