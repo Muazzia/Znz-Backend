@@ -146,7 +146,7 @@ const createCourse = async (req, res) => {
 
 
         const parentCategory = await courseParentCategory.findByPk(value.parentCategory)
-        if (!parentCategory) return res.status(404).send(responseObject("Course not found", 404, "", "Course id is invalid"))
+        if (!parentCategory) return res.status(404).send(responseObject("Parent Category found", 404, "", "Parent Category id is invalid"))
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
