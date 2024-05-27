@@ -83,39 +83,6 @@ const handleMulterUpload = (fieldName, isSingle, maxImagesInMultiple, isRequired
 
     });
   };
-  const hanldeSinleUpload = (req, res, next) => {
-    // const uploadProfile = uploadSingle.single('profilePic');
-    uploadProfile(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        // Multer-specific error
-        console.log("Multer Error:", err);
-        return res.status(400).json({
-          statusCode: 400,
-          message: "File upload error",
-          error: err.message,
-        });
-      } else if (err) {
-        // Generic error
-        console.log("Error:", err);
-        return res.status(500).json({
-          statusCode: 500,
-          message: "Internal server error",
-          error: err.message,
-        });
-      }
-
-      // Check if files are missing in the request
-      if (!req.file) {
-        return res.status(400).json({
-          statusCode: 400,
-          message: `Missing required parameter ${fieldName}`,
-        });
-      }
-
-      console.log("File Uploaded Successfully!");
-      next();
-    });
-  }
 }
 
 // Middleware to handle file upload
