@@ -10,11 +10,9 @@ const { Sequelize, Op } = require('sequelize');
 const getAllUser = async (req, res) => {
     try {
         let userInput = req.query.filter;
-
         if (userInput) {
             console.log(userInput);
             userInput = userInput.replace(/\s+/g, '');
-
             const data = await userModel.findAll({
                 attributes: { exclude: ['password'] }, // Exclude password field
                 where: {
@@ -24,7 +22,6 @@ const getAllUser = async (req, res) => {
                     ]
                 }
             });
-
             return res.status(200).send(responseObject("Successfully Received", 200, data));
         }
         const data = await userModel.findAll({
@@ -33,7 +30,6 @@ const getAllUser = async (req, res) => {
             }
         })
         return res.status(200).send(responseObject("Successfully Received", 200, data))
-
     } catch (error) {
         return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error try again"))
     }

@@ -231,10 +231,7 @@ const addProfilePic = async (req, res) => {
       ...passwordExludeObj
     })
     if (!user) return res.status(400).send('user not found')
-
-
     const cloudinaryResponse = await uploadSingleToCloudinary(req.file, 'user')
-
     if (!cloudinaryResponse.isSuccess) {
       return res.status(500).json({
         statusCode: 500,
@@ -242,12 +239,10 @@ const addProfilePic = async (req, res) => {
         error: cloudinaryResponse.error,
       });
     }
-
     await user.update({
       profilePic: cloudinaryResponse.data
     })
-
-    return res.status(201).send({ message: "Profile Pic Updated Successfully", user })
+    return res.status(201).send({ message: "Profile Picture Updated Successfully", user })
   } catch (error) {
     // console.log(error);
     return res.status(500).json({
@@ -273,12 +268,9 @@ const addCoverPic = async (req, res) => {
         error: cloudinaryResponse.error.message,
       });
     }
-
     await user.update({
       coverPic: cloudinaryResponse.data
     })
-
-
     return res.status(201).send({ message: "Cover Photo Updated Successfully", user })
   } catch (error) {
     res.status(500).send('Server Error')
@@ -302,24 +294,17 @@ const changePassword = async (req, res) => {
   try {
     const { error, value } = validateChangePassword(req.body)
     if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
-
     const { oldPassword, newPassword, confirmPassword } = value
     if (newPassword !== confirmPassword) return res.status(400).send(responseObject("Password's doesn't match", 400, "", "Password's doesn't match"))
-
     const user = await userModel.findByPk(req.userEmail)
     if (!user) return res.status(404).send(responseObject("User not found", 404, "", "User not found"))
-
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
-
     if (!isPasswordValid) {
       return res.status(401).json(responseObject("Invalid old password", 401, "", "Invalid old password"));
     }
-
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
     // Update user's password in the database
     await user.update({ password: hashedNewPassword });
-
     return res.status(200).json(responseObject("Password changed successfully", 200, user));
   }
   catch (error) {

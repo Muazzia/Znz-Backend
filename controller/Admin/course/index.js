@@ -13,12 +13,10 @@ const subCategoryOptionObject = {
         exclude: ["parentCategoryId"]
     }
 }
-
-
+ 
 const getAllParentCat = async (req, res) => {
     try {
         const data = await courseParentCat.findAll();
-
         return res.status(200).send(responseObject("Succesfully retrieved Data", 200, data))
     } catch (error) {
         return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))

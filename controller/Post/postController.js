@@ -13,8 +13,6 @@ const getLikesData = async (postId) => {
       postId
     }
   })
-
-
   // group likes together on the basis of users
   const likesModified = await Promise.all(likes.map(async l => {
     try {
@@ -47,7 +45,6 @@ const getCommentsData = async (postId) => {
       }
     } catch (error) { }
   }))
-
   return commentsModified;
 }
 
@@ -56,11 +53,8 @@ const modifyData = async (allPosts, isMyPosts) => {
     const userData = await userModel.findByPk(allPosts[0].dataValues.email);
     const data = await Promise.all(allPosts.map(async (post) => {
       try {
-
         const likes = await getLikesData(post.dataValues.postID)
         const comments = await getCommentsData(post.dataValues.postID)
-
-
         return {
           ...post.toJSON(),
           likes: {
@@ -90,7 +84,6 @@ const modifyData = async (allPosts, isMyPosts) => {
           postId: post.dataValues.postID
         }
       })
-
       // group likes together on the basis of users
       const likesModified = await Promise.all(likes.map(async l => {
         try {
@@ -151,7 +144,6 @@ const myPost = async (req, res) => {
     const userEmail = req.userEmail;
     let postData
     if (Object.keys(req.query).length > 0) {
-
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
@@ -165,7 +157,6 @@ const myPost = async (req, res) => {
         where: { email: userEmail }
       });
     }
-
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
@@ -190,10 +181,8 @@ const singlePost = async (req, res) => {
     const id = req.params.id
     const post = await postModel.findByPk(id)
     if (!post) return res.status(404).send(responseObject("Post not found", 404, "", "Id is not valid"))
-
     const likes = await getLikesData(id);
     const comments = await getCommentsData(id);
-
     const data = {
       ...post.toJSON(),
       likes: {
@@ -215,9 +204,7 @@ const userPost = async (req, res) => {
   try {
     const userEmail = req.params.email
     let postData;
-
     if (Object.keys(req.query).length > 0) {
-
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
@@ -231,14 +218,10 @@ const userPost = async (req, res) => {
         where: { email: userEmail }
       });
     }
-
-
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
-
     const data = await modifyData(postData, true)
-
     return res
       .status(200)
       .json({
@@ -255,27 +238,18 @@ const addingPost = async (req, res) => {
   try {
     const { error, value: { postText } } = validateAddPost(req.body)
     if (error) return res.status(400).send(error.message)
-
-
     const userEmail = req.userEmail;
     const chkUser = await userModel.findByPk(userEmail)
     if (!chkUser) return res.status(400).send('User not found')
-
-
     const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
     if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
-
     const imageUrls = imagesUploadResponse.data
-
     const postAdd = await postModel.create({
       email: userEmail,
       postText,
       images: imageUrls,
     });
-
     const user = await userModel.findByPk(userEmail);
-
-
     return res.status(201).json({
       statusCode: 201,
       message: "Post added successfully",
@@ -344,7 +318,6 @@ const delPost = async (req, res) => {
     const postId = req.params.id;
     const post = await postModel.findByPk(postId)
     if (!post) return res.status(404).send('Post not found')
-
     const userEmail = req.userEmail;
     if (post.email !== userEmail) return res.status(401).send("No Persmission to Delete Post")
 
@@ -353,11 +326,8 @@ const delPost = async (req, res) => {
     //   const cloudinaryResponse = await deleteFromCloudinary(post.images[image])
     //   if (cloudinaryResponse.error) return res.status(500).send({ message: "Can't delete at the moment", status: 500 })
     // }
-
-
     await post.destroy();
-
-    return res.send({ message: 'post deleted', status: 200, data: post })
+    return res.send({ message: 'Post Deleted Successfully', status: 200, data: post })
   } catch (error) {
     console.log(error);
     return res.status(500).send('Server Error')
