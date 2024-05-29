@@ -66,8 +66,8 @@ const userData = Joi.object({
             'string.pattern.base': 'phoneNumber must be a numeric string with a maximum length of 11',
             'string.max': 'phoneNumber must have a maximum length of 11',
         }),
-    address: Joi.string().max(255),
-    bio: Joi.string().max(255)
+    address: Joi.string().min(0).max(255),
+    bio: Joi.string().min(0).max(255)
 });
 
 const validateUserData = (body) => {
