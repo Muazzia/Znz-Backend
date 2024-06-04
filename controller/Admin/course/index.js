@@ -13,7 +13,7 @@ const subCategoryOptionObject = {
         exclude: ["parentCategoryId"]
     }
 }
- 
+
 const getAllParentCat = async (req, res) => {
     try {
         const data = await courseParentCat.findAll();

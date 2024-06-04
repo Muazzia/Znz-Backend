@@ -18,16 +18,25 @@ const productR = require('../routes/Product/product')
 
 
 const { getAParentCat, getAllSubCat, getAllParentCat } = require('../controller/Admin/course')
+const { getAllParentCat: getAllProductParentCat, getAllSubCat: getAllProductSubCat, getAParentCat: getAProductParentCat } = require("../controller/Admin/product")
 
 
 
 router.use('/validatetoken', checkExistingToken, checkJWT, tokenR)
 router.use("/auth/user", authR);
 
+// getting course categories. Placed it outside to no admin check is avoided
 router.get('/course/parent', checkExistingToken, checkJWT, getAllParentCat)
 router.get('/course/sub', checkExistingToken, checkJWT, getAllSubCat)
 router.get('/course/parent/:id', checkExistingToken, checkJWT, getAParentCat)
 router.get('/course/sub/:id', checkExistingToken, checkJWT, getAllSubCat)
+
+// getting product categories. Placed it outside to no admin check is avoided
+router.get('/product/parent', checkExistingToken, checkJWT, getAllProductParentCat)
+router.get('/product/sub', checkExistingToken, checkJWT, getAllProductSubCat)
+router.get('/product/parent/:id', checkExistingToken, checkJWT, getAProductParentCat)
+// router.get('/product/sub/:id', checkExistingToken, checkJWT, getAllSubCat)yahan likhs
+
 
 router.use('/admin', adminCheckJWT, adminR)
 

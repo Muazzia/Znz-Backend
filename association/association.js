@@ -9,6 +9,9 @@ const productModel = require("../models/product");
 const courseParentCategory = require("../models/courseParentCategory");
 const courseSubCategory = require("../models/courseSubCategory");
 const courseSubCategoryBridge = require("../models/courseSubCategoryBridge");
+const productParentCategory = require("../models/productParentCategory");
+const productSubCategory = require("../models/productSubCategory");
+const productSubCategoryBridge = require("../models/productSubCategoryBridge");
 // const storyModel = require("../models/storiesModel")
 
 console.log("association called")
@@ -72,3 +75,14 @@ courseSubCategory.belongsToMany(courseModel, { through: courseSubCategoryBridge,
 
 // course sub category to course parent category
 courseSubCategory.belongsTo(courseParentCategory, { foreignKey: "parentCategoryId", targetKey: "courseParentCategoryId" })
+
+
+// product to parentCategory
+productModel.belongsTo(productParentCategory, { foreignKey: 'parentCategory', targetKey: "productParentCategoryId" })
+
+// // product to subCategory with brige table
+productModel.belongsToMany(productSubCategory, { through: productSubCategoryBridge, as: 'subCategories', foreignKey: 'productId' });
+productSubCategory.belongsToMany(productModel, { through: productSubCategoryBridge, as: 'products', foreignKey: 'subCategoryId' });
+
+// // product sub category to course parent category
+productSubCategory.belongsTo(productParentCategory, { foreignKey: "parentCategoryId", targetKey: "productParentCategoryId" })

@@ -37,13 +37,12 @@ const productModel = sequelize.define('products', {
         allowNull: false
     },
     parentCategory: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    subCategories: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: []
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: "productparentcategories",
+            key: 'productParentCategoryid'
+        }
     },
     authorEmail: {
         type: DataTypes.STRING,

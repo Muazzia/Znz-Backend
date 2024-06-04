@@ -17,7 +17,7 @@ postRouter.get("/my-posts", myPost);
 postRouter.get('/user-posts/:email', userPost)
 postRouter.get('/:id', singlePost)
 
-postRouter.post("/", handleMulterUpload("images", false, 10), addingPost);
+postRouter.post("/", handleMulterUpload("images", false, 10, false), addingPost);
 postRouter.delete("/:id", delPost)
 
 
