@@ -128,9 +128,11 @@ const createCourse = async (req, res) => {
     try {
         const { error, value } = validateCreateCourse(req.body)
         if (error) return res.status(400).send({ status: 400, message: error.message });
+
         const userEmail = req.userEmail
         const user = await userModel.findByPk(userEmail)
         if (!user) return res.status(404).send(responseObject('User not Found', 404))
+
         const parentCategory = await courseParentCategory.findByPk(value.parentCategory)
         if (!parentCategory) return res.status(404).send(responseObject("Parent Category found", 404, "", "Parent Category id is invalid"))
 
@@ -140,10 +142,13 @@ const createCourse = async (req, res) => {
                 message: "Missing required parameter - images",
             });
         }
+
         const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "course")
         if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
+
         const imageUrls = imagesUploadResponse.data;
         let course = await courseModel.create({ ...value, authorEmail: userEmail, images: imageUrls });
+
         if (value.subCategories && value.subCategories.length > 0) {
             const subCategories = await courseSubCategory.findAll({
                 where: {
@@ -154,12 +159,14 @@ const createCourse = async (req, res) => {
             if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
             await course.addSubCategories(subCategories);
         }
+
         if (!course) return res.status(404).send(responseObject("Course not created", 404))
         course = await courseModel.findByPk(course.courseId, {
             ...userAtrributesObject, attributes: {
                 exclude: ['parentCategory']
             }
         })
+
         return res.send(responseObject("Course Created Successfully", 200, course))
     } catch (error) {
         console.log(error);

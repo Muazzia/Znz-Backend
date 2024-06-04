@@ -123,6 +123,35 @@ const createSubCat = async (req, res) => {
 }
 
 
+const deleteParentCat = async (req, res) => {
+    try {
+        const id = req.params.id
+        const data = await productParentCategory.findByPk(id);
+
+        if (!data) return res.status(404).send(responseObject("Id is not valid", 404, "parent category not found"))
+
+        await data.destroy()
+        return res.status(200).send(responseObject("Succesfully deleted data", 200, data))
+    } catch (error) {
+        return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))
+    }
+}
+
+const deleteSubCat = async (req, res) => {
+    try {
+        const id = req.params.id
+        const data = await productSubCategory.findByPk(id, { ...subCategoryOptionObject });
+
+        if (!data) return res.status(404).send(responseObject("Id is not valid", 404, "sub category not found"))
+
+        await data.destroy()
+        return res.status(200).send(responseObject("Succesfully deleted data", 200, data))
+    } catch (error) {
+        return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))
+    }
+}
+
+
 // categories 
 
 
@@ -216,4 +245,4 @@ const deleteAProduct = async (req, res) => {
 }
 
 
-module.exports = { getAllProducts, getAllProductsForASpecificUser, deleteAProduct, getAllParentCat, getAllSubCat, getAParentCat, getASubCat, createSubCat, createParentCat }
+module.exports = { getAllProducts, getAllProductsForASpecificUser, deleteAProduct, getAllParentCat, getAllSubCat, getAParentCat, getASubCat, createSubCat, createParentCat, deleteParentCat, deleteSubCat }

@@ -3,7 +3,7 @@ const sequelize = require('../database/connection')
 
 
 const productSubCategoryBridge = sequelize.define("productSubCategoryBridge", {
-    courseSubCategoryBridgeId: {
+    productSubCategoryBridgeId: {
         type: DataTypes.UUID,
         allowNull: false,
         primaryKey: true,

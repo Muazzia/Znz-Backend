@@ -65,7 +65,7 @@ productModel.belongsTo(userModel, { foreignKey: 'authorEmail', targetKey: 'email
 storyModel.belongsTo(userModel, { foreignKey: 'userEmail', targetKey: 'email' });
 
 
-
+// courses
 // course to parentCategory
 courseModel.belongsTo(courseParentCategory, { foreignKey: 'parentCategory', targetKey: "courseParentCategoryId" })
 
@@ -77,6 +77,7 @@ courseSubCategory.belongsToMany(courseModel, { through: courseSubCategoryBridge,
 courseSubCategory.belongsTo(courseParentCategory, { foreignKey: "parentCategoryId", targetKey: "courseParentCategoryId" })
 
 
+// products
 // product to parentCategory
 productModel.belongsTo(productParentCategory, { foreignKey: 'parentCategory', targetKey: "productParentCategoryId" })
 
