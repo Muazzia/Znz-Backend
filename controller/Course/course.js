@@ -156,7 +156,10 @@ const createCourse = async (req, res) => {
                     parentCategoryId: value.parentCategory
                 },
             });
-            if (subCategories && !subCategories.length > 0) return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
+            if (subCategories && !subCategories.length > 0) {
+                await course.destroy();
+                return res.status(400).send(responseObject("Atleast One subcategory is required", "400", "", "Sub category id's are not valid"))
+            }
             await course.addSubCategories(subCategories);
         }
 
