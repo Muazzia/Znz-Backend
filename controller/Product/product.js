@@ -12,7 +12,10 @@ const userAtrributesObject = {
         { model: userModel, attributes: ['email', 'profilePic', 'coverPic', 'firstName', 'lastName'] },
         { model: productParentCategory, attributes: ['productParentCategoryId', 'name'] },
         { model: productSubCategory, as: 'subCategories', through: { attributes: [] } }
-    ]
+    ],
+    attributes: {
+        exclude: ["parentCategory"]
+    },
 }
 
 const getAllProducts = async (req, res) => {
@@ -22,8 +25,12 @@ const getAllProducts = async (req, res) => {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
+            const parentCategory = req.query.parentCategory;
             allProductData = await productModel.findAll({
                 ...userAtrributesObject,
+                where: {
+                    parentCategory
+                },
                 limit,
                 offset
             })
@@ -131,9 +138,7 @@ const createProduct = async (req, res) => {
 
 
         product = await productModel.findByPk(product.productId, {
-            ...userAtrributesObject, attributes: {
-                exclude: ['parentCategory']
-            }
+            ...userAtrributesObject
         })
 
         return res.status(200).send(responseObject("Successfully Created", 200, product))
