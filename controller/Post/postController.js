@@ -160,7 +160,9 @@ const myPost = async (req, res) => {
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
-    const data = await modifyData(postData, true)
+    let data = await modifyData(postData, true)
+    data = data.sort((a, b) => b.createdAt - a.createdAt)
+
     return res.status(200).json({
       statusCode: 200,
       message: "All posts fetched",
