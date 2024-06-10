@@ -1,6 +1,7 @@
 const { validateCreateFollower, validateUpdateFollowStatus } = require('../../joiSchemas/Follower/follower');
 const followerModel = require('../../models/followerModel');
 const userModel = require('../../models/userModel');
+const { responseObject } = require('../../utils/responseObject')
 const { Op } = require('sequelize');
 
 
@@ -32,30 +33,60 @@ const modifyData = async (followers, isUserReq) => {
     }
 }
 
+const getAll = async (req, res) => {
+    try {
+        const userEmail = req.userEmail;
+        let data;
+        if (Object.keys(req.query).length > 0) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const offset = (page - 1) * limit;
+            data = await followerModel.findAll({
+                where: {
+                    userEmail,
+                },
+                limit,
+                offset
+            });
+        } else {
+            data = await followerModel.findAll({
+                where: {
+                    userEmail
+                }
+            });
+        }
+        data = await modifyData(data, true)
+        return res.send(responseObject("successfully", 200, data))
+
+    } catch (error) {
+        return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
+    }
+}
+
 const getAllFollower = async (req, res) => {
     try {
         const userEmail = req.userEmail;
         let followerData;
-        if(Object.keys(req.query).length  > 0){
-            const page = parseInt(req.query.page) || 1; 
-            const limit = parseInt(req.query.limit) || 10; 
+        if (Object.keys(req.query).length > 0) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
-         followerData = await followerModel.findAll({
-            where: {
-                followingEmail: userEmail,
-                status: 'accepted',
-            },
-            limit,
-            offset
-        });
-    }else{
-        followerData = await followerModel.findAll({
-            where: {
-                followingEmail: userEmail,
-                status: 'accepted'
-            }
-        });
-    }
+            followerData = await followerModel.findAll({
+                where: {
+                    followingEmail: userEmail,
+                    status: 'accepted',
+                },
+                limit,
+                offset
+            });
+        } else {
+            followerData = await followerModel.findAll({
+                where: {
+                    followingEmail: userEmail,
+                    status: 'accepted'
+                }
+            });
+        }
         const data = await modifyData(followerData, true)
         return res.send({ message: 'all Followers', staus: 200, data })
     } catch (error) {
@@ -67,26 +98,26 @@ const getAllFollowing = async (req, res) => {
     try {
         const userEmail = req.userEmail;
         let followingData;
-        if(Object.keys(req.query).length  > 0){
-            const page = parseInt(req.query.page) || 1; 
-            const limit = parseInt(req.query.limit) || 10; 
+        if (Object.keys(req.query).length > 0) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
             followingData = await followerModel.findAll({
-            where: {
-                userEmail: userEmail,
-                status: 'accepted',
-            },
-            limit,
-            offset
-        });
-    }else{
-        followingData = await followerModel.findAll({
-            where: {
-                userEmail: userEmail,
-                status: 'accepted'
-            }
-        });
-    }
+                where: {
+                    userEmail: userEmail,
+                    status: 'accepted',
+                },
+                limit,
+                offset
+            });
+        } else {
+            followingData = await followerModel.findAll({
+                where: {
+                    userEmail: userEmail,
+                    status: 'accepted'
+                }
+            });
+        }
         const data = await modifyData(followingData, false)
         return res.send({ message: 'all Following', staus: 200, data })
     } catch (error) {
@@ -221,4 +252,4 @@ const getAllFollowRequests = async (req, res) => {
     }
 }
 
-module.exports = { getAllFollower, getASpeceficFollower, createAFollowRequest, deleteAFollowing, deleteAFollower, getAllFollowRequests, updateStatusOfFollower, getAllFollowing }
+module.exports = { getAllFollower, getASpeceficFollower, createAFollowRequest, deleteAFollowing, deleteAFollower, getAllFollowRequests, updateStatusOfFollower, getAllFollowing, getAll }

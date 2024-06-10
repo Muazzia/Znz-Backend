@@ -43,9 +43,14 @@ const getCommentsData = async (postId) => {
         user: { firstName, lastName, profilePic, email },
         comment: { ...comment.dataValues }
       }
+
+
     } catch (error) { }
   }))
-  return commentsModified;
+  const validComments = commentsModified.filter(comment => comment !== null);
+  const sortedComments = validComments.sort((a, b) => new Date(a.comment.createdAt) - new Date(b.comment.createdAt));
+  return sortedComments;
+  // return commentsModified;
 }
 
 const modifyData = async (allPosts, isMyPosts) => {
