@@ -15,10 +15,11 @@ const tokenR = require('../routes/Token/token')
 const coursesR = require('../routes/Course/course')
 const followerR = require('../routes/Follower/follower')
 const productR = require('../routes/Product/product')
+const interestR = require('../routes/Admin/interest');
 
 
 const { getAParentCat, getAllSubCat, getAllParentCat } = require('../controller/Admin/course')
-const { getAllParentCat: getAllProductParentCat, getAllSubCat: getAllProductSubCat, getAParentCat: getAProductParentCat } = require("../controller/Admin/product")
+const { getAllParentCat: getAllProductParentCat, getAllSubCat: getAllProductSubCat, getAParentCat: getAProductParentCat } = require("../controller/Admin/product");
 
 
 
@@ -51,6 +52,7 @@ router.use('/user/connection', checkExistingToken, checkJWT, followerR)
 
 router.use('/course', checkExistingToken, checkJWT, coursesR)
 router.use('/product', checkExistingToken, checkJWT, productR)
+router.use('/interest',checkExistingToken,checkJWT,interestR)
 
 
 
