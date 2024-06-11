@@ -10,21 +10,42 @@ const { Sequelize, Op } = require('sequelize');
 const getAllUser = async (req, res) => {
     try {
         let userInput = req.query.filter;
+        const chkisBlockedQuery = Object.keys(req.query);
+
         if (userInput) {
-            console.log(userInput);
             userInput = userInput.replace(/\s+/g, '');
-            const data = await userModel.findAll({
-                attributes: { exclude: ['password'] }, // Exclude password field
-                where: {
-                    [Op.or]: [
-                        Sequelize.literal(`CONCAT(firstName, lastName) LIKE '%${userInput}%'`), // Search in concatenated name
-                        { email: { [Op.like]: `%${userInput}%` } } // Search in email field with wildcard
-                    ]
-                }
-            });
+            let data;
+
+            if (chkisBlockedQuery.includes("isBlocked")) {
+                data = await userModel.findAll({
+                    attributes: { exclude: ['password'] }, // Exclude password field
+                    where: {
+                        [Op.or]: [
+                            Sequelize.literal(`CONCAT(firstName, lastName) LIKE '%${userInput}%'`), // Search in concatenated name
+                            { email: { [Op.like]: `%${userInput}%` } } // Search in email field with wildcard
+                        ],
+                        isBlocked: req.query.isBlocked === "true" ? true : false
+                    }
+                });
+
+            }
+            else {
+                data = await userModel.findAll({
+                    attributes: { exclude: ['password'] }, // Exclude password field
+                    where: {
+                        [Op.or]: [
+                            Sequelize.literal(`CONCAT(firstName, lastName) LIKE '%${userInput}%'`), // Search in concatenated name
+                            { email: { [Op.like]: `%${userInput}%` } } // Search in email field with wildcard
+                        ]
+                    }
+                });
+            }
             return res.status(200).send(responseObject("Successfully Received", 200, data));
         }
         const data = await userModel.findAll({
+            where: {
+                isBlocked: req.query.isBlocked === "true" ? true : false
+            },
             attributes: {
                 exclude: ['password']
             }
