@@ -16,15 +16,17 @@ const coursesR = require('../routes/Course/course')
 const followerR = require('../routes/Follower/follower')
 const productR = require('../routes/Product/product')
 const interestR = require('../routes/Admin/interest');
-
+const { getAInterest, getAllInterest } = require("../controller/Admin/interest")
 
 const { getAParentCat, getAllSubCat, getAllParentCat } = require('../controller/Admin/course')
 const { getAllParentCat: getAllProductParentCat, getAllSubCat: getAllProductSubCat, getAParentCat: getAProductParentCat } = require("../controller/Admin/product");
 
 
 
+
 router.use('/validatetoken', checkExistingToken, checkJWT, tokenR)
 router.use("/auth/user", authR);
+
 
 // getting course categories. Placed it outside to no admin check is avoided
 router.get('/course/parent', checkExistingToken, checkJWT, getAllParentCat)
@@ -52,7 +54,10 @@ router.use('/user/connection', checkExistingToken, checkJWT, followerR)
 
 router.use('/course', checkExistingToken, checkJWT, coursesR)
 router.use('/product', checkExistingToken, checkJWT, productR)
-router.use('/interest',checkExistingToken,checkJWT,interestR)
+
+router.get('/interest', getAllInterest)
+router.get('/interest/:id', getAInterest)
+router.use('/interest', checkExistingToken, checkJWT, interestR)
 
 
 
