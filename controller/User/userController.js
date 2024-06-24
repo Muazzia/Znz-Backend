@@ -351,7 +351,7 @@ const updateUserPersonalInfo = async (req, res) => {
     })
 
     return res.status(200).send({
-      message: "Updated",
+      message: "Updated Successfully",
       user
     })
   } catch (error) {
