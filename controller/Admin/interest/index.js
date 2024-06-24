@@ -46,7 +46,7 @@ const createInterest = async (req, res) => {
       res.status(200).json({
         statusCode: 200,
         message: "Interest updated succesfully",
-        data: newInterest
+        data: interest
       });
       
     } catch (error) {
@@ -91,11 +91,7 @@ const createInterest = async (req, res) => {
       });
     } catch (error) {
       console.log("internal server error getting all interest", error);
-      return res.status(500).json({
-        statusCode: 500,
-        message: "Internal Server Error",
-        error: error,
-      });
+      return res.status(200).send(responseObject("Successfully Retrieved", 200, interest))
     }
   };
   
