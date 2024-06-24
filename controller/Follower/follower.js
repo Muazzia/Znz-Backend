@@ -230,7 +230,8 @@ const updateStatusOfFollower = async (req, res) => {
             status
         })
         // const user=await userModel.findByPk(data.)
-        res.status(200).send({ message: "Status Updated Successfully", status: 200, data: { ...data.dataValues, } })
+        if (status === 'rejected') return res.status(200).send({ message: "Request Rejected", status: 200, data: { ...data.dataValues, } })
+        else res.status(200).send({ message: "Request Accepted Successfully", status: 200, data: { ...data.dataValues, } })
     } catch (error) {
         return res.status(500).send('Server Error')
     }
