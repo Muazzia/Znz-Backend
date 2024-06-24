@@ -21,7 +21,7 @@ const validateSetPass = (body) => {
 const additionalUserDataSchema = Joi.object({
     country: Joi.string().required().max(255),
     language: Joi.string().required().max(255),
-    gender: Joi.string().required().valid('male', 'female', 'other'),
+    gender: Joi.string().required().valid('Male', 'Female', 'Other'),
     interests: Joi.array().items(Joi.string()).required()
 })
 
