@@ -42,10 +42,22 @@ const getAllUser = async (req, res) => {
             }
             return res.status(200).send(responseObject("Successfully Received", 200, data));
         }
+
+        if (chkisBlockedQuery.includes("isBlocked")) {
+            const data = await userModel.findAll({
+                attributes: { exclude: ['password'] }, // Exclude password field
+                where: {
+                    isBlocked: req.query.isBlocked === "true" ? true : false
+                }
+
+            });
+            return res.status(200).send(responseObject("Successfully Received", 200, data));
+        }
+
         const data = await userModel.findAll({
-            where: {
-                isBlocked: req.query.isBlocked === "true" ? true : false
-            },
+            // where: {
+            //     isBlocked: req.query.isBlocked === "true" ? true : false
+            // },
             attributes: {
                 exclude: ['password']
             }
