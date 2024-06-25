@@ -243,11 +243,27 @@ const userPost = async (req, res) => {
       postData = await postModel.findAll({
         where: { email: userEmail },
         limit,
-        offset
+        offset,
+        include: [
+          {
+            model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
       });
     } else {
       postData = await postModel.findAll({
-        where: { email: userEmail }
+        where: { email: userEmail },
+        include: [
+          {
+            model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
       });
     }
     if (postData.length === 0) return res
@@ -305,7 +321,7 @@ const addingPost = async (req, res) => {
     console.log("🚀 ~ addingPost ~ user:", user)
     return res.status(201).json({
       statusCode: 201,
-      message: "Post added successfully",
+      message: "Post Added Successfully",
       postAdd: {
         ...temp.dataValues,
         images: JSON.parse(postAdd.dataValues.images),
