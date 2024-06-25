@@ -43,6 +43,7 @@ const deleteInterest = async (req, res) => {
     const { id } = req.params
     const interest = await interestModel.findByPk(id)
 
+    if (!interest) return res.status(404).send(responseObject("Interest Not Found", 404, "", "Id is not valid"))
     await interest.destroy()
 
     return res.status(200).json(responseObject("Interest Deleted Successfully", 200, interest));

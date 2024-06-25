@@ -32,7 +32,7 @@ const validateAdditionalUserData = (body) => {
 const updateAdditionalUserDataSchema = Joi.object({
     country: Joi.string().max(255),
     language: Joi.string().max(255),
-    gender: Joi.string().valid('male', 'female', 'other'),
+    gender: Joi.string().valid('Male', 'Female', 'Other'),
     interests: Joi.array().items(Joi.string())
 })
 

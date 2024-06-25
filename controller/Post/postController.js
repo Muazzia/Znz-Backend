@@ -5,6 +5,9 @@ const { uploadMultipleToCloudinary } = require('../../utils/cloudinary/cloudinar
 const postLikeModel = require("../../models/likepostModel.js");
 const commentModel = require("../../models/commentModel.js");
 const { responseObject } = require("../../utils/responseObject/index.js");
+const interest = require("../../models/interestModel.js");
+const postInterestBridge = require("../../models/postInterestBridge.js");
+const { post } = require("../../index.js");
 
 
 const getLikesData = async (postId) => {
@@ -24,7 +27,6 @@ const getLikesData = async (postId) => {
       }
     } catch (error) { console.log('In post  error'); }
   }))
-
   return likesModified
 }
 
@@ -43,8 +45,6 @@ const getCommentsData = async (postId) => {
         user: { firstName, lastName, profilePic, email },
         comment: { ...comment.dataValues }
       }
-
-
     } catch (error) { }
   }))
   const validComments = commentsModified.filter(comment => comment !== null);
@@ -75,7 +75,8 @@ const modifyData = async (allPosts, isMyPosts) => {
             lastName: userData.lastName,
             profilePic: userData.profilePic,
             email: userData.email
-          }
+          },
+          interests: post.interests 
         };
       } catch (error) { }
     }));
@@ -134,11 +135,11 @@ const modifyData = async (allPosts, isMyPosts) => {
           lastName: userData.lastName,
           profilePic: userData.profilePic,
           email: userData.email
-        }
+        },
+        interests: post.interests 
       };
     } catch (error) { }
   }));
-
   data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   return data ? data : []
 
@@ -155,11 +156,27 @@ const myPost = async (req, res) => {
       postData = await postModel.findAll({
         where: { email: userEmail },
         limit,
-        offset
+        offset,
+        include: [
+          {
+            model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
       });
     } else {
       postData = await postModel.findAll({
-        where: { email: userEmail }
+        where: { email: userEmail },
+        include: [
+          {
+            model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
       });
     }
     if (postData.length === 0) return res
@@ -167,7 +184,6 @@ const myPost = async (req, res) => {
       .json({ statusCode: 200, message: "All posts fetched", data: [] })
     let data = await modifyData(postData, true)
     data = data.sort((a, b) => b.createdAt - a.createdAt)
-
     return res.status(200).json({
       statusCode: 200,
       message: "All posts fetched",
@@ -186,7 +202,16 @@ const myPost = async (req, res) => {
 const singlePost = async (req, res) => {
   try {
     const id = req.params.id
-    const post = await postModel.findByPk(id)
+    const post = await postModel.findByPk(id,{
+      include: [
+        {
+          model: interest,
+          through: {
+            attributes: [] // Exclude the bridge data
+          }
+        }
+      ]
+    })
     if (!post) return res.status(404).send(responseObject("Post not found", 404, "", "Id is not valid"))
     const likes = await getLikesData(id);
     const comments = await getCommentsData(id);
@@ -243,7 +268,7 @@ const userPost = async (req, res) => {
 
 const addingPost = async (req, res) => {
   try {
-    const { error, value: { postText } } = validateAddPost(req.body)
+    const { error, value: { postText,interests } } = validateAddPost(req.body)
     if (error) return res.status(400).send(error.message)
     const userEmail = req.userEmail;
     const chkUser = await userModel.findByPk(userEmail)
@@ -256,12 +281,33 @@ const addingPost = async (req, res) => {
       postText,
       images: imageUrls,
     });
+    const validInterests = await interest.findAll({
+      where: {
+        id: interests
+      }
+    });
+    if (!validInterests.length) return res.status(400).send('No valid interests found');
+    const postInterestData = validInterests.map(interest => ({
+      postId: postAdd.postID,
+      interestId: interest.id
+    }));
+    // Bulk create the postInterestBridge records
+    await postInterestBridge.bulkCreate(postInterestData);
+
+    const temp=await postModel.findByPk(postAdd.postID,{
+      include:[
+        {model:interest,through:{
+          attributes:[]
+        }}
+      ]
+    })
     const user = await userModel.findByPk(userEmail);
+    console.log("🚀 ~ addingPost ~ user:", user)
     return res.status(201).json({
       statusCode: 201,
       message: "Post added successfully",
       postAdd: {
-        ...postAdd.dataValues,
+        ...temp.dataValues,
         images: JSON.parse(postAdd.dataValues.images),
         likes: {
           count: 0,
@@ -274,7 +320,7 @@ const addingPost = async (req, res) => {
         user: {
           firstName: user.firstName,
           lastName: user.lastName,
-          profilePic: user.profilePic
+          profilePic: user.profilePic,
         }
       },
     });
@@ -295,15 +341,30 @@ const allPosts = async (req, res) => {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
-
       postData = await postModel.findAll({
         limit,
-        offset
+        offset,
+        include: [
+          {
+            model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
       });
     } else {
-      postData = await postModel.findAll();
+      postData = await postModel.findAll({
+        include: [
+          { 
+             model: interest,
+            through: {
+              attributes: [] // Exclude the bridge data
+            }
+          }
+        ]
+      });
     }
-
     if (postData.length === 0) return res
       .status(200)
       .json({ statusCode: 200, message: "No Post Found", data: postData })
@@ -323,11 +384,19 @@ const allPosts = async (req, res) => {
 const delPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const post = await postModel.findByPk(postId)
+    const post = await postModel.findByPk(postId,{
+      include: [
+        {
+          model: interest,
+          through: {
+            attributes: [] // Exclude the bridge data
+          }
+        }
+      ]
+    })
     if (!post) return res.status(404).send('Post not found')
     const userEmail = req.userEmail;
     if (post.email !== userEmail) return res.status(401).send("No Persmission to Delete Post")
-
     // for (let image in post.images) {
     //   console.log(post.images[image]);
     //   const cloudinaryResponse = await deleteFromCloudinary(post.images[image])
@@ -343,4 +412,3 @@ const delPost = async (req, res) => {
 
 
 module.exports = { addingPost, myPost, allPosts, delPost, userPost, singlePost };
-

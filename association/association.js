@@ -12,6 +12,9 @@ const courseSubCategoryBridge = require("../models/courseSubCategoryBridge");
 const productParentCategory = require("../models/productParentCategory");
 const productSubCategory = require("../models/productSubCategory");
 const productSubCategoryBridge = require("../models/productSubCategoryBridge");
+const postinterestBridge = require("../models/postInterestBridge");
+const interest = require("../models/interestModel");
+
 // const storyModel = require("../models/storiesModel")
 
 console.log("association called")
@@ -87,3 +90,11 @@ productSubCategory.belongsToMany(productModel, { through: productSubCategoryBrid
 
 // // product sub category to course parent category
 productSubCategory.belongsTo(productParentCategory, { foreignKey: "parentCategoryId", targetKey: "productParentCategoryId" })
+
+
+//interest post
+postModel.belongsToMany(interest, { through: postinterestBridge, foreignKey: "postID", onDelete: "CASCADE", onUpdate: "CASCADE" });
+interest.belongsToMany(postModel, { through: postinterestBridge, foreignKey: "interestId", onDelete: "CASCADE", onUpdate: "CASCADE" });
+
+interest.belongsToMany(postModel, { through: postinterestBridge, foreignKey: "interestId", onDelete: "CASCADE", onUpdate: "CASCADE" });
+postModel.belongsToMany(interest, { through: postinterestBridge, foreignKey: "postID", onDelete: "CASCADE", onUpdate: "CASCADE" });

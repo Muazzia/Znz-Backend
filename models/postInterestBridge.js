@@ -15,7 +15,8 @@ const postInterestBridge = sequelize.define("postInterestBridge", {
         references: {
             model: "posts",
             key: "postID"
-        }
+        },
+        onDelete: "CASCADE"
     },
     interestId: {
         type: DataTypes.UUID,
@@ -23,7 +24,8 @@ const postInterestBridge = sequelize.define("postInterestBridge", {
         references: {
             model: "interests",
             key: "Id"
-        }
+        },
+        onDelete: "CASCADE"
     }
 })
 
