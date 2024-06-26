@@ -15,7 +15,8 @@ const courseSubCategoryBridge = sequelize.define("courseSubCategoryBridge", {
         references: {
             model: "courses",
             key: "courseId"
-        }
+        },
+        onDelete: "CASCADE"
     },
     subCategoryId: {
         type: DataTypes.UUID,
@@ -23,7 +24,9 @@ const courseSubCategoryBridge = sequelize.define("courseSubCategoryBridge", {
         references: {
             model: "courseSubCategory",
             key: "courseSubCategoryId"
-        }
+        },
+        onDelete: "CASCADE"
+
     }
 })
 

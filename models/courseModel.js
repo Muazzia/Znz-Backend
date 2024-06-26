@@ -71,11 +71,6 @@ const courseModel = sequelize.define("courses", {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     },
-    // status: {
-    //     type: DataTypes.ENUM,
-    //     allowNull: false,
-    //     values: ['pending', 'accepted', 'rejected']
-    // },
 })
 
 

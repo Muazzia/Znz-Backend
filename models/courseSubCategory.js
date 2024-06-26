@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../database/connection')
 
-
 const courseSubCategory = sequelize.define("courseSubCategory", {
     courseSubCategoryId: {
         type: DataTypes.UUID,
@@ -19,7 +18,8 @@ const courseSubCategory = sequelize.define("courseSubCategory", {
         references: {
             model: "courseparentcategories",
             key: "courseParentCategoryId"
-        }
+        },
+        onDelete: "CASCADE"
     }
 })
 

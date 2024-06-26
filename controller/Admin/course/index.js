@@ -140,6 +140,7 @@ const deleteSubCat = async (req, res) => {
         await data.destroy()
         return res.status(200).send(responseObject("Succesfully deleted data", 200, data))
     } catch (error) {
+        console.log();
         return res.status(500).send(responseObject("Internal Server Error", 500, "", "Server Error"))
     }
 }
