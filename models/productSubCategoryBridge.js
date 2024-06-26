@@ -15,7 +15,8 @@ const productSubCategoryBridge = sequelize.define("productSubCategoryBridge", {
         references: {
             model: "products",
             key: "productId"
-        }
+        },
+        onDelete: "CASCADE"
     },
     subCategoryId: {
         type: DataTypes.UUID,
@@ -23,7 +24,8 @@ const productSubCategoryBridge = sequelize.define("productSubCategoryBridge", {
         references: {
             model: "productSubCategories",
             key: "productSubCategoryId"
-        }
+        },
+        onDelete: "CASCADE"
     }
 })
 

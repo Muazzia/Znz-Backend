@@ -42,7 +42,8 @@ const productModel = sequelize.define('products', {
         references: {
             model: "productparentcategories",
             key: 'productParentCategoryid'
-        }
+        },
+        onDelete: "CASCADE"
     },
     authorEmail: {
         type: DataTypes.STRING,
@@ -50,7 +51,9 @@ const productModel = sequelize.define('products', {
         references: {
             key: 'email',
             model: userModel
-        }
+        },
+        onDelete: "CASCADE"
+
     }
 })
 
