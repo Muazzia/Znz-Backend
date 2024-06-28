@@ -56,7 +56,7 @@ function adminCheckJWT(req, res, next) {
     } else {
       res.status(403).send("Forbidden: You are not an admin");
     }
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }

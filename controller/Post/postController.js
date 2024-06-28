@@ -76,7 +76,7 @@ const modifyData = async (allPosts, isMyPosts) => {
             profilePic: userData.profilePic,
             email: userData.email
           },
-          interests: post.interests 
+          interests: post.interests
         };
       } catch (error) { }
     }));
@@ -136,7 +136,7 @@ const modifyData = async (allPosts, isMyPosts) => {
           profilePic: userData.profilePic,
           email: userData.email
         },
-        interests: post.interests 
+        interests: post.interests
       };
     } catch (error) { }
   }));
@@ -202,7 +202,7 @@ const myPost = async (req, res) => {
 const singlePost = async (req, res) => {
   try {
     const id = req.params.id
-    const post = await postModel.findByPk(id,{
+    const post = await postModel.findByPk(id, {
       include: [
         {
           model: interest,
@@ -284,37 +284,45 @@ const userPost = async (req, res) => {
 
 const addingPost = async (req, res) => {
   try {
-    const { error, value: { postText,interests } } = validateAddPost(req.body)
+    const { error, value: { postText, interests } } = validateAddPost(req.body)
     if (error) return res.status(400).send(error.message)
     const userEmail = req.userEmail;
+
     const chkUser = await userModel.findByPk(userEmail)
     if (!chkUser) return res.status(400).send('User not found')
-    const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
-    if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
-    const imageUrls = imagesUploadResponse.data
-    const postAdd = await postModel.create({
-      email: userEmail,
-      postText,
-      images: imageUrls,
-    });
+
     const validInterests = await interest.findAll({
       where: {
         id: interests
       }
     });
     if (!validInterests.length) return res.status(400).send('No valid interests found');
+
+    const imagesUploadResponse = await uploadMultipleToCloudinary(req.files, "post")
+    if (!imagesUploadResponse.isSuccess) return res.status(500).send(responseObject("Image Uplaod Error", 500, "", imagesUploadResponse.error));
+    const imageUrls = imagesUploadResponse.data
+
+    const postAdd = await postModel.create({
+      email: userEmail,
+      postText,
+      images: imageUrls,
+    });
+
+
     const postInterestData = validInterests.map(interest => ({
       postId: postAdd.postID,
       interestId: interest.id
     }));
+
     // Bulk create the postInterestBridge records
     await postInterestBridge.bulkCreate(postInterestData);
-
-    const temp=await postModel.findByPk(postAdd.postID,{
-      include:[
-        {model:interest,through:{
-          attributes:[]
-        }}
+    const temp = await postModel.findByPk(postAdd.postID, {
+      include: [
+        {
+          model: interest, through: {
+            attributes: []
+          }
+        }
       ]
     })
     const user = await userModel.findByPk(userEmail);
@@ -341,7 +349,6 @@ const addingPost = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error in adding post:", error);
     return res.status(500).json({
       statusCode: 500,
       message: "Internal server error",
@@ -372,8 +379,8 @@ const allPosts = async (req, res) => {
     } else {
       postData = await postModel.findAll({
         include: [
-          { 
-             model: interest,
+          {
+            model: interest,
             through: {
               attributes: [] // Exclude the bridge data
             }
@@ -400,7 +407,7 @@ const allPosts = async (req, res) => {
 const delPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const post = await postModel.findByPk(postId,{
+    const post = await postModel.findByPk(postId, {
       include: [
         {
           model: interest,
