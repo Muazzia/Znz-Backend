@@ -16,7 +16,6 @@ const passwordExludeObj = {
     exclude: ['password']
   }
 }
-
 // new
 const getUserData = async (req, res) => {
   try {
@@ -24,20 +23,14 @@ const getUserData = async (req, res) => {
     const user = await userModel.findByPk(email, {
       ...passwordExludeObj
     });
-
     if (!user) return res.status(404).send('Not Found');
-
     return res.send({ message: "Data Received Successfully", status: "200", user })
-
-
   } catch (error) {
     return res.status(500).send('Server Error')
   }
 }
 
-
 const forgotPassword = async (req, res) => {
-
   const { error, value: { email } } = validateForgotPass(req.body);
   if (error) {
     return res.status(400).send(error.message);
@@ -45,17 +38,13 @@ const forgotPassword = async (req, res) => {
 
   try {
     const userToFind = await userModel.findOne({ where: { email: email } });
-
     if (!userToFind) {
       return res.status(400).json({ statusCode: 400, message: "User not found" });
     }
-
     if (userToFind.googleUser) return res.status(400).send({ statusCode: 400, message: "Google User Can't Reset Password" })
-
     if (userToFind.password === null) {
       return res.status(400).json({ statusCode: 400, message: "Email sent already." });
     }
-
     const jwtToken = jwt.sign(
       {
         email: userToFind.email,
@@ -64,27 +53,19 @@ const forgotPassword = async (req, res) => {
       process.env.Secret_KEY,
       { expiresIn: '20m' }
     );
-
     await handleResetPassword(jwtToken, userToFind.email)
-
     // Send a success response to the client
     return res.status(201).json({ statusCode: 201, message: "Reset Link Sent. Check your email." });
-
   } catch (error) {
     console.error("Error processing forgotPassword:", error);
     // Send an error response to the client
     return res.status(500).json({ statusCode: 500, message: "Internal Server Error" });
   }
 };
-
-
 const setPassword = async (req, res) => {
   if (!req.isPassReset) return res.status(401).send('Token Invalid')
-
   const { error, value: { password, confirmPassword } } = validateSetPass(req.body)
   if (error) return res.status(400).send(error.message)
-
-
   // const email = req.params.email;
   const email = req.userEmail
   const userPassword = await userModel.findOne({
@@ -95,7 +76,6 @@ const setPassword = async (req, res) => {
   if (!userPassword) {
     return res.status(400).json({ statusCode: 400, message: "user not found" });
   }
-
   if (password !== confirmPassword) {
     return res.status(400).json({
       statusCode: 400,
@@ -122,12 +102,9 @@ const setPassword = async (req, res) => {
     });
   }
 };
-
-
 const userDashboard = (req, res) => {
   res.end("hello user dashboard");
 };
-
 const logout = async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   try {
@@ -147,7 +124,6 @@ const additionalUserDetails = async (req, res) => {
   try {
     const { error, value: { country, language, gender, interests } } = validateAdditionalUserData(req.body)
     if (error) return res.status(400).send(error.message)
-
     // Check if all fields are provided
     if (!country || !language || !gender || !interests) {
       return res.status(400).json({
@@ -156,28 +132,22 @@ const additionalUserDetails = async (req, res) => {
         fields: "country, gender, language, interests",
       });
     }
-
     // Check for the presence of the JWT token
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ statusCode: 401, message: "Token missing" });
     }
-
     // Split the token on the base of space
     const accessToken = authHeader.split(" ")[1];
-
     // Verify token
     const decoded = jwt.verify(accessToken, process.env.Secret_KEY);
-
     // Extract user email from decoded information
     const userEmail = decoded.email;
-
     // Check if information is already added
     const checkInformation = await additional.findOne({ where: { email: userEmail } });
     if (checkInformation) {
       return res.status(400).json({ statusCode: 400, message: "Information already added" });
     }
-
     // Add additional details
     const additionalDetails = await additional.create({
       email: userEmail,
@@ -186,7 +156,6 @@ const additionalUserDetails = async (req, res) => {
       language: language,
       interests: interests,
     });
-
     return res.status(201).json({
       statusCode: 201,
       message: "Additional details added successfully",
@@ -197,23 +166,16 @@ const additionalUserDetails = async (req, res) => {
     return res.status(500).json({ statusCode: 500, message: "Internal server error" });
   }
 }
-
-
 const updateAdditionalUserDetails = async (req, res) => {
   try {
     const { error, value } = validaUpdateAdditionalUserData(req.body)
     console.log(value, "value",);
-
     if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
-
     if (Object.keys(value).length === 0) return res.status(400).send(responseObject("Please add atleast one value", 400, "", "update request is invalid"))
-
     const userDetails = await userDetailsModel.findByPk(req.userEmail, {
       ...passwordExludeObj
     })
     if (!userDetails) return res.status(404).send(responseObject("User not found", 404, "", "Id in not valid"))
-
-
     await userDetails.update({
       ...value
     });
@@ -223,8 +185,6 @@ const updateAdditionalUserDetails = async (req, res) => {
     return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
   }
 }
-
-
 const addProfilePic = async (req, res) => {
   try {
     const user = await userModel.findByPk(req.userEmail, {
@@ -259,7 +219,6 @@ const addCoverPic = async (req, res) => {
       ...passwordExludeObj
     })
     if (!user) return res.status(400).send('user not found')
-
     const cloudinaryResponse = await uploadSingleToCloudinary(req.file, 'user');
     if (cloudinaryResponse.error) {
       return res.status(500).json({
@@ -317,17 +276,13 @@ const addUserDetails = async (req, res) => {
   try {
     const { error, value } = validateUserData(req.body)
     if (error) return res.status(400).send(error.message)
-
     const user = await userModel.findByPk(req.userEmail, {
       ...passwordExludeObj
     });
-
     if (!user) return res.status(404).send('Not found User')
-
     await user.update({
       ...value
     })
-
     return res.status(200).send({ message: "Deatils Updated Successfully", user })
   } catch (error) {
     return res.status(500).send("Server Error")
@@ -338,18 +293,14 @@ const updateUserPersonalInfo = async (req, res) => {
   try {
     const { error, value } = validateUserPersonalInfoUpdate(req.body)
     if (error) return res.status(400).send(error.message);
-
     const userEmail = req.userEmail
-
     const user = await userModel.findByPk(userEmail, {
       ...passwordExludeObj
     })
     if (!user) return res.status(404).send('User Not Found')
-
     await user.update({
       ...value
     })
-
     return res.status(200).send({
       message: "Updated Successfully",
       user
