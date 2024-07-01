@@ -15,14 +15,14 @@ const likePost = async (req, res) => {
       where: { email: userEmail },
     });
     if (!userExist) {
-      return res.status(400).send(responseObject("user not found", 400, "","user not found"));
+      return res.status(400).send(responseObject("user not found", 400, "", "user not found"));
     }
     const postExist = await postModel.findOne({
       where: { postID: postId },
     });
 
     if (!postExist) {
-      return res.status(404).send(responseObject("post not found", 404, "","post not found"));
+      return res.status(404).send(responseObject("post not found", 404, "", "post not found"));
     }
 
     // Check if the user has already liked the post
@@ -34,8 +34,8 @@ const likePost = async (req, res) => {
     });
     if (existingLike) {
       await existingLike.destroy()
-      return res.status(200).send(responseObject("Unliked", 200, ""));
-      
+      return res.status(200).send(responseObject("Unliked", 200, existingLike));
+
     }
     else {
       const addLike = await likePostModel.create({
@@ -43,13 +43,13 @@ const likePost = async (req, res) => {
         postId,
       });
 
-      return res.status(200).send(responseObject("liked", 200,addLike));
-     
+      return res.status(200).send(responseObject("liked", 200, addLike));
+
     }
 
   } catch (error) {
     console.error("Internal server error - likePost Controller", error);
-    return  res.status(500).send(responseObject("Internal server error", 500,"",error.message));
+    return res.status(500).send(responseObject("Internal server error", 500, "", error.message));
   }
 };
 
