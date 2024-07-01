@@ -28,7 +28,7 @@ const modifyData = async (followers, isUserReq) => {
               coverPic,
             },
           };
-        } catch (error) {}
+        } catch (error) { }
       })
     );
     data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -150,7 +150,7 @@ const getASpeceficFollower = async (req, res) => {
       return res
         .status(404)
         .send(
-          responseObject("Follower Not Found", 404, data, "Follower Not Found")
+          responseObject("Follower Not Found", 404, "", "Follower Not Found")
         );
     return res.status(200).send(responseObject("all Following", 200, follower));
   } catch (error) {
