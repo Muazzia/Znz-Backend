@@ -18,8 +18,8 @@ userRoutes.route("/logout").post(checkPreviousToken, checkJWT, logout);
 
 userRoutes.route("/add-details").post(checkPreviousToken, checkJWT, additionalUserDetails);
 userRoutes.route('/update-details').put(checkPreviousToken, checkJWT, updateAdditionalUserDetails)
-userRoutes.route('/user-extradetails').get(checkPreviousToken, checkJWT, getUserExtraDetails)
 userRoutes.route('/user-details').patch(checkPreviousToken, checkJWT, addUserDetails)
+userRoutes.route('/user-extradetails').get(checkPreviousToken, checkJWT, getUserExtraDetails)
 userRoutes.route('/user-personal').put(checkPreviousToken, checkJWT, updateUserPersonalInfo)
 
 

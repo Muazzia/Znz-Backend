@@ -14,6 +14,7 @@ const productSubCategory = require("../models/productSubCategory");
 const productSubCategoryBridge = require("../models/productSubCategoryBridge");
 const postinterestBridge = require("../models/postInterestBridge");
 const interest = require("../models/interestModel");
+const userInterest = require("../models/userInterest");
 
 // const storyModel = require("../models/storiesModel")
 
@@ -98,3 +99,8 @@ interest.belongsToMany(postModel, { through: postinterestBridge, foreignKey: "in
 
 interest.belongsToMany(postModel, { through: postinterestBridge, foreignKey: "interestId", onDelete: "CASCADE", onUpdate: "CASCADE" });
 postModel.belongsToMany(interest, { through: postinterestBridge, foreignKey: "postID", onDelete: "CASCADE", onUpdate: "CASCADE" });
+
+
+// user with interest
+userDetailsModel.belongsToMany(interest, { through: userInterest, foreignKey: 'userEmail', as: 'interests' });
+interest.belongsToMany(userDetailsModel, { through: userInterest, foreignKey: 'interestId', as: 'users' });

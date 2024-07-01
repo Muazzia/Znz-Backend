@@ -3,12 +3,14 @@ const bcrypt = require("bcrypt");
 
 const userModel = require("../../models/userModel");
 const tokenModel = require("../../models/blacklistModel");
-const { transporter, handleResetPassword } = require("../../utils/nodeMailer/mailer");
+const { handleResetPassword } = require("../../utils/nodeMailer/mailer");
 const additional = require("../../models/userAdditionalInformation");
 const { validateForgotPass, validateSetPass, validateAdditionalUserData, validateChangePassword, validateUserData, validateUserPersonalInfoUpdate, validaUpdateAdditionalUserData } = require("../../joiSchemas/User/userSchema");
 const { uploadSingleToCloudinary } = require("../../utils/cloudinary/cloudinary");
 const userDetailsModel = require("../../models/userAdditionalInformation");
 const { responseObject } = require("../../utils/responseObject");
+const interest = require("../../models/interestModel");
+const userInterest = require("../../models/userInterest");
 
 
 const passwordExludeObj = {
@@ -16,6 +18,7 @@ const passwordExludeObj = {
     exclude: ['password']
   }
 }
+
 // new
 const getUserData = async (req, res) => {
   try {
@@ -62,6 +65,8 @@ const forgotPassword = async (req, res) => {
     return res.status(500).json({ statusCode: 500, message: "Internal Server Error" });
   }
 };
+
+
 const setPassword = async (req, res) => {
   if (!req.isPassReset) return res.status(401).send('Token Invalid')
   const { error, value: { password, confirmPassword } } = validateSetPass(req.body)
@@ -102,9 +107,12 @@ const setPassword = async (req, res) => {
     });
   }
 };
+
+
 const userDashboard = (req, res) => {
   res.end("hello user dashboard");
 };
+
 const logout = async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   try {
@@ -166,12 +174,41 @@ const additionalUserDetails = async (req, res) => {
     return res.status(500).json({ statusCode: 500, message: "Internal server error" });
   }
 }
+
+
 const updateAdditionalUserDetails = async (req, res) => {
   try {
     const { error, value } = validaUpdateAdditionalUserData(req.body)
     console.log(value, "value",);
     if (error) return res.status(400).send(responseObject(error.message, 400, "", error.message))
     if (Object.keys(value).length === 0) return res.status(400).send(responseObject("Please add atleast one value", 400, "", "update request is invalid"))
+
+    if (value.interests && value.interests.length > 0) {
+      // Find all interests that match the provided IDs
+      const interests = await interest.findAll({
+        where: {
+          id: value.interests
+        }
+      });
+
+
+
+      await userInterest.destroy({
+        where: {
+          userEmail: req.userEmail,
+        }
+      });
+
+      // Create new associations for the user
+      if (interests.length > 0) {
+        const validatedInterests = interests.map(interest => ({
+          userEmail: req.userEmail,
+          interestId: interest.id
+        }));
+        await userInterest.bulkCreate(validatedInterests);
+      }
+    }
+
     const userDetails = await userDetailsModel.findByPk(req.userEmail, {
       ...passwordExludeObj
     })
@@ -179,12 +216,26 @@ const updateAdditionalUserDetails = async (req, res) => {
     await userDetails.update({
       ...value
     });
-    return res.status(200).send(responseObject("Details Updated Successfully", 200, userDetails))
+
+    const temp = await userDetailsModel.findByPk(userDetails.email, {
+      include: [
+        {
+          model: interest,
+          as: "interests",
+          through: {
+            attributes: [],
+          }
+        }
+      ]
+    })
+    return res.status(200).send(responseObject("Details Updated Successfully", 200, temp))
   } catch (error) {
     console.log(error);
     return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"))
   }
 }
+
+
 const addProfilePic = async (req, res) => {
   try {
     const user = await userModel.findByPk(req.userEmail, {
@@ -239,9 +290,20 @@ const addCoverPic = async (req, res) => {
 const getUserExtraDetails = async (req, res) => {
   try {
     const userDetails = await userDetailsModel.findByPk(req.userEmail, {
-      ...passwordExludeObj
+      ...passwordExludeObj,
+      include: [
+        {
+          model: interest,
+          as: "interests",
+          through: {
+            attributes: [],
+          }
+        }
+      ]
     })
-    if (!userDetails) return res.send({})
+
+    if (!userDetails) return res.send({ message: "Not Found", error: "Details not found", status: 404 })
+
     return res.send({ message: "User Extra Details", userDetails })
   } catch (error) {
     return res.status(500).send('Server error')
@@ -280,9 +342,29 @@ const addUserDetails = async (req, res) => {
       ...passwordExludeObj
     });
     if (!user) return res.status(404).send('Not found User')
+
+    if (value.interests && value.interests.length > 0) {
+      // Find all interests that match the provided IDs
+      const interests = await interest.findAll({
+        where: {
+          id: value.interests
+        }
+      });
+
+      // Create new associations for the user
+      if (interests.length > 0) {
+        const validatedInterests = interests.map(interest => ({
+          userEmail: req.userEmail,
+          interestId: interest.id
+        }));
+        await userInterest.bulkCreate(validatedInterests);
+      }
+    }
+
     await user.update({
       ...value
     })
+
     return res.status(200).send({ message: "Deatils Updated Successfully", user })
   } catch (error) {
     return res.status(500).send("Server Error")
