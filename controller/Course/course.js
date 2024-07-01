@@ -87,7 +87,7 @@ const getAllCourses = async (req, res) => {
     data = sortData(data);
     return res.status(200).send(responseObject("Successfull", 200, data));
   } catch (error) {
-    return res.status(500).send(responseObject("Server Error", 500));
+    return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"));
   }
 };
 
@@ -137,7 +137,7 @@ const getASpecificCourse = async (req, res) => {
     // const data = await modifySinlge(course)
     return res.send(responseObject("Successful", 200, course));
   } catch (error) {
-    return res.status(500).send(responseObject("Server Error", 500));
+    return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"));
   }
 };
 
@@ -280,12 +280,7 @@ const updateCourse = async (req, res) => {
         return res
           .status(404)
           .send(
-            responseObject(
-              "parent category not found",
-              404,
-              "",
-              "parent category id is not valid"
-            )
+            responseObject("parent category not found", 404, "", "parent category id is not valid")
           );
     }
     const id = req.params.id;
@@ -339,7 +334,7 @@ const updateCourse = async (req, res) => {
               "",
               "Sub category id's are not valid"
             )
-          ); 
+          );
       await course.setSubCategories([]);
       await course.addSubCategories(subCategories);
     }
@@ -372,7 +367,7 @@ const updateCourse = async (req, res) => {
     return res.send(responseObject("Course Updated Successfully", 200, course));
   } catch (error) {
     console.log(error);
-    return res.status(500).send(responseObject("Server Error", 500));
+    return res.status(500).send(responseObject("Server Error", 500, "", "Internal Server Error"));
   }
 };
 
